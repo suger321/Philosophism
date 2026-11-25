@@ -198,6 +198,24 @@
   .tool .ico { display: none; }
   #panel .handle { display: none; }
 
+  /* 自由视角的准星 */
+  #reticle {
+    position: fixed; left: 50%; top: 50%; width: 10px; height: 10px;
+    margin: -5px 0 0 -5px; border-radius: 50%; z-index: 14;
+    border: 1px solid rgba(255, 255, 255, .45);
+    pointer-events: none; display: none;
+    transition: border-color .15s, background .15s, transform .15s;
+  }
+  #reticle.on { display: block; }
+  #reticle.hit { border-color: var(--gold); background: rgba(255, 209, 102, .35); transform: scale(1.5); }
+  #reticle span {
+    position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
+    font-size: 11px; color: var(--gold); white-space: nowrap;
+    opacity: 0; transition: opacity .15s;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, .9);
+  }
+  #reticle.hit span { opacity: 1; }
+
   /* 选中后浮现的两个小动作 */
   #acts { position: fixed; z-index: 18; display: none; transform: translate(0, -50%); flex-direction: column; gap: 6px; }
   #acts.on { display: flex; }
@@ -310,6 +328,7 @@
 <body>
 <canvas id="scene"></canvas>
 <div id="labels"></div>
+<div id="reticle"><span>点击查看</span></div>
 
 <div id="topbar">
   <div class="brand">主义星图<small>ISM ATLAS</small></div>
@@ -395,7 +414,7 @@
 </div>
 
 <script src="./vendor/three.min.js"></script>
-<script src="./data/isms.js?v=21"></script>
-<script src="./app.js?v=21"></script>
+<script src="./data/isms.js?v=22"></script>
+<script src="./app.js?v=22"></script>
 </body>
 </html>

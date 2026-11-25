@@ -427,6 +427,15 @@
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
     if (mode === 'roam') {
+      // 准星瞄到了就近的主义：退出锁定、还原鼠标，直接看详情
+      if (aimTarget) {
+        document.exitPointerLock && document.exitPointerLock();
+        canvas.classList.remove('locked');
+        setSelected(aimTarget);
+        openPanel(aimTarget.userData.ism);
+        focusOn(aimTarget);
+        return;
+      }
       if (document.pointerLockElement !== canvas) {
         try {
           const p = canvas.requestPointerLock();
@@ -676,6 +685,29 @@
     actsEl.classList.add('on');
     actsEl.style.left = ((_v3.x * 0.5 + 0.5) * innerWidth + (isTouch ? 46 : 32)) + 'px';
     actsEl.style.top = ((-_v3.y * 0.5 + 0.5) * innerHeight) + 'px';
+  }
+
+  /* ---------- 自由视角准星：瞄到近处的主义可直接点 ---------- */
+  const reticleEl = document.getElementById('reticle');
+  let aimTarget = null;
+
+  function updateAim() {
+    if (mode !== 'roam') {
+      if (aimTarget) aimTarget = null;
+      reticleEl.classList.remove('on', 'hit');
+      return;
+    }
+    reticleEl.classList.add('on');
+    ndc.set(0, 0);
+    ray.setFromCamera(ndc, camera);
+    const hit = ray.intersectObjects(nodes.filter(n => n.visible), false)[0];
+    if (hit && hit.distance < 9) {
+      aimTarget = hit.object;
+      reticleEl.classList.add('hit');
+    } else {
+      aimTarget = null;
+      reticleEl.classList.remove('hit');
+    }
   }
 
   const ORIGIN_POS = new THREE.Vector3(0, 0, 0);
@@ -1088,6 +1120,7 @@
     camera.updateMatrixWorld();
     camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
 
+    updateAim();
     updateLabels();
     updateActs();
     updateTip();
@@ -1121,7 +1154,7 @@
       const el = n.userData.el;
       if (!el) return;
       // 选中的点不显示名字：右边已经有 ↑ ＋ 两个按钮，再叠文字会打架
-      const on = n.visible && n !== selected && (showLabels || n === hovered);
+      const on = n.visible && n !== selected && (showLabels || n === hovered || n === aimTarget);
       if (!on) {
         if (el.style.display !== 'none') el.style.display = 'none';
         return;
@@ -1244,7 +1277,7 @@
 
   /* ---------- 启动 ---------- */
   document.body.classList.add('intro-open');
-  window.__ism = { nodes, camera, scene, orbit, switchFrame, frame: () => frame, mode: () => mode, resetView };
+  window.__ism = { nodes, camera, scene, orbit, roam, switchFrame, frame: () => frame, mode: () => mode, resetView };
   tintStars();
   rebuildAxes();
   buildNodes();
