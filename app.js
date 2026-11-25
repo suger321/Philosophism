@@ -532,7 +532,7 @@
     verdictEl.textContent = '';
   }
 
-  function showVerdict(title, text, ms) {
+  function showVerdict(title, text, ms, onUndo) {
     verdictEl.textContent = '';
     const t = document.createElement('div');
     t.className = 'vt';
@@ -541,17 +541,41 @@
     d.className = 'vd';
     d.textContent = text;
     verdictEl.append(t, d);
+
+    if (onUndo) {
+      const b = document.createElement('button');
+      b.className = 'act';
+      b.style.cssText = 'width:auto;height:auto;padding:5px 13px;border-radius:999px;margin-top:10px;font-size:12px';
+      b.textContent = '↩ 撤回';
+      b.onclick = () => { hideVerdict(); onUndo(); };
+      verdictEl.appendChild(b);
+    }
+
     verdictEl.classList.add('on');
     clearTimeout(verdictTimer);
     if (ms !== 0) verdictTimer = setTimeout(hideVerdict, ms || 4200);
   }
 
   function applyExtreme(r) {
-    const from = selected ? selected.userData.ism : null;
-    const to = isms.find(i => i.id === r.to);
-    showVerdict(`${from ? from.name : ''} → ${to ? to.name : '另一个极端'}`, r.note);
+    const fromNode = selected;
+    const from = fromNode ? fromNode.userData.ism : null;
+    const toIsm = isms.find(i => i.id === r.to);
     const target = nodes.find(n => n.visible && n.userData.ism.id === r.to);
-    if (target) setTimeout(() => { if (target.visible) focusOn(target); }, 500);
+
+    showVerdict(
+      `${from ? from.name : ''} → ${toIsm ? toIsm.name : '另一个极端'}`,
+      r.note,
+      6000,
+      target && fromNode ? () => {
+        if (fromNode.visible) { setSelected(fromNode); focusOn(fromNode); }
+      } : null
+    );
+
+    if (target) {
+      setSelected(target);
+      openPanel(target.userData.ism);
+      focusOn(target);
+    }
   }
 
   function openPush() {
@@ -612,17 +636,31 @@
   }
 
   function finishBlend(r) {
+    const fromNode = selected;
     const a = isms.find(i => i.id === r.a);
     const b = isms.find(i => i.id === r.b);
     const to = isms.find(i => i.id === r.to);
+    const target = nodes.find(n => n.visible && n.userData.ism.id === r.to);
+
+    mixing = false;
+    mixSet = new Set();
+
     showVerdict(
       `${a ? a.name : ''} + ${b ? b.name : ''} → ${to ? to.name : '抵消'}`,
-      r.note
+      r.note,
+      6000,
+      target && fromNode ? () => {
+        if (fromNode.visible) { setSelected(fromNode); focusOn(fromNode); }
+      } : null
     );
-    mixing = false;
-    setSelected(selected);
-    const target = nodes.find(n => n.visible && n.userData.ism.id === r.to);
-    if (target) setTimeout(() => { if (target.visible) focusOn(target); }, 700);
+
+    if (target) {
+      setSelected(target);
+      openPanel(target.userData.ism);
+      focusOn(target);
+    } else {
+      setSelected(null);
+    }
   }
 
   actsEl.addEventListener('click', e => {
@@ -636,7 +674,7 @@
     _v3.copy(selected.position).project(camera);
     if (_v3.z > 1) { actsEl.classList.remove('on'); return; }
     actsEl.classList.add('on');
-    actsEl.style.left = ((_v3.x * 0.5 + 0.5) * innerWidth + 30) + 'px';
+    actsEl.style.left = ((_v3.x * 0.5 + 0.5) * innerWidth + (isTouch ? 46 : 32)) + 'px';
     actsEl.style.top = ((-_v3.y * 0.5 + 0.5) * innerHeight) + 'px';
   }
 
@@ -683,9 +721,20 @@
       return;
     }
 
+    // 手机上第一次点只高亮（把 ↑ ＋ 让出来），再点同一个才看详情
+    if (isTouch && selected === hit.object) {
+      openPanel(hit.object.userData.ism);
+      return;
+    }
+
     setSelected(hit.object);
-    openPanel(hit.object.userData.ism);
     focusOn(hit.object);
+
+    if (isTouch) {
+      showVerdict('已选中', '再点一次看详情；右边 ↑ 推一把，＋ 混一下。', 3000);
+    } else {
+      openPanel(hit.object.userData.ism);
+    }
   }
 
   // 悬停提示
@@ -1070,7 +1119,8 @@
     nodes.forEach(n => {
       const el = n.userData.el;
       if (!el) return;
-      const on = n.visible && (showLabels || n === hovered || n === selected);
+      // 选中的点不显示名字：右边已经有 ↑ ＋ 两个按钮，再叠文字会打架
+      const on = n.visible && n !== selected && (showLabels || n === hovered);
       if (!on) {
         if (el.style.display !== 'none') el.style.display = 'none';
         return;
