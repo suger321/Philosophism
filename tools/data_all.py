@@ -3,7 +3,7 @@
 import json
 import pathlib
 
-ROOT = pathlib.Path(r'D:\WORK\project\ism-map')
+ROOT = pathlib.Path(__file__).resolve().parent.parent
 AXES = ['mood', 'effort', 'focus', 'reality', 'social', 'money', 'horizon', 'stance']
 
 

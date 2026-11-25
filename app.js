@@ -247,6 +247,7 @@
 
   function buildNodes() {
     isms.forEach(ism => {
+      if (ism.hidden) return; // 彩蛋条目，等触发后才出生
       const base = colorFor((ism.coords || {})[frame.axes[0]] || 0);
       const mat = new THREE.MeshBasicMaterial({ color: base.clone(), transparent: true });
       const mesh = new THREE.Mesh(geo, mat);
@@ -279,29 +280,11 @@
   function birthSpark() {
     if (curMode !== 'life') switchMode('life');
 
-    const item = {
-      id: 'sparkism',
-      name: '烁主义',
-      nameEn: 'Sparkism',
-      oneLine: '它还没被写下来。',
-      definition: '（本体待补：烁主义的定义、主张、优势与局限，等人来写。）',
-      when: '',
-      tenets: [], strengths: [], limits: [], figures: [],
-      coords: {
-        mood: 0.7, effort: 0.4, focus: -0.2, reality: 0.3,
-        social: 0.2, money: 0, horizon: 0.5, stance: 0.6,
-        situation: 0.6, theory: 0.2, locus: 0.1, source: -0.3,
-        plurality: 0.5, dimension: 0.5, aim: 0.4
-      },
-      mode: 'life',
-      sources: [],
-      custom: true,
-      spark: true
-    };
+    const item = isms.find(i => i.hidden && !i.sparkBorn);
+    if (!item) return;
+    item.sparkBorn = true;
 
-    isms.push(item);
-
-    const base = colorFor(item.coords.mood);
+    const base = colorFor((item.coords || {})[frame.axes[0]] || 0);
     const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: base.clone(), transparent: true }));
     mesh.position.set(0, 0, 0);
     mesh.visible = true;

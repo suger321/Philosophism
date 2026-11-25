@@ -128,6 +128,48 @@ NEW_PHILO = [
     },
 ]
 
+SHUO = {
+    'id': 'shuoism',
+    'name': '烁主义',
+    'nameEn': 'Shuoism',
+    'oneLine': '不站队，但每件事都自己判一次。',
+    'definition': '它不给你一套立场，只给你一个习惯：遇到事，先自己看一遍，再决定要不要开口。它认为判断是消耗品，用一次少一次，所以不花在不会改变结果的地方。它也不保证你正确，只保证你没把别人的结论当成自己的。亮一下就够，不必一直亮着。',
+    'when': '群里为一件跟你毫不相干的事吵起来了，你打了一行字，又删掉。',
+    'tenets': [
+        '不站队，但每件事单独判一次，不打包。',
+        '判断是消耗品，别用在吵架上，留在能改变结果的地方。',
+        '需要向别人证明的立场，通常是自己也还没信透的。',
+        '与其赢一场争论，不如多懂一件事。',
+    ],
+    'strengths': [
+        '不容易被口号绑走，谁喊得响都不管用。',
+        '省下大量情绪，这些情绪本来能拿去干别的。',
+        '判断力越用越准，因为每次都自己从头过一遍。',
+    ],
+    'limits': [
+        '关键时刻容易被当成没立场，而沉默是要被误读的。',
+        '长期不表态，慢慢就没人问你怎么想了。',
+        '极容易滑向犬儒——「反正说了也没用」和「我选择不说」长得一模一样。',
+    ],
+    'figures': [
+        '这个我得想想。',
+        '你说得有道理，但我还是觉得不对。',
+        '算了，不吵了。',
+    ],
+    # 生活八轴：全部压在 ±0.5 以内，从原点长出来
+    'coords': {
+        'mood': 0.2, 'effort': -0.1, 'focus': -0.4, 'reality': 0.5,
+        'social': -0.5, 'money': -0.2, 'horizon': 0.1, 'stance': 0.2,
+        # 哲学八轴：按同一气质延伸到另一套轴
+        'situation': 0.2, 'theory': 0.1, 'locus': 0.4, 'source': 0.2,
+        'plurality': 0.4, 'dimension': -0.3, 'aim': 0.1,
+    },
+    'mode': 'life',
+    'hidden': True,
+    'axesConfidence': 'editorial',
+    'sources': [],
+}
+
 data = json.load(open(PATH, encoding='utf-8'))
 by_id = {i['id']: i for i in data['isms']}
 
@@ -152,7 +194,10 @@ for item in NEW_PHILO:
         'axesConfidence': 'editorial', 'sources': []
     })
 
-data['meta']['version'] = '2.0-dual'
+if not any(i['id'] == 'shuoism' for i in data['isms']):
+    data['isms'].append(SHUO)
+
+data['meta']['version'] = '2.1-dual-shuo'
 data['meta']['modes'] = {
     'life': {
         'name': '生活模式',
