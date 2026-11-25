@@ -216,6 +216,13 @@
     transition: opacity .24s, transform .24s;
   }
   #verdict.on { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+  /* 横屏手机高度小，结果条贴底，别占掉中间视野 */
+  @media (max-height: 480px) {
+    #verdict { bottom: 10px; padding: 10px 14px; max-width: 62vw; }
+    #verdict .vt { font-size: 13px; margin-bottom: 3px; }
+    #verdict .vd { font-size: 12px; line-height: 1.6; }
+  }
+
   #verdict .vt { font-size: 14px; font-weight: 600; color: var(--gold); margin-bottom: 5px; }
   #verdict .vd { font-size: 13px; line-height: 1.75; color: #b6c4d8; }
 
