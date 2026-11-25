@@ -159,6 +159,12 @@
   );
   ring.renderOrder = 996;
   origin.add(ring);
+  // 原点上的签名
+  const mark = makeLabelSprite('suger', 'rgba(12,26,40,0.92)', 26, 0.0055);
+  mark.position.set(0, 0, 0);
+  mark.material.depthTest = false;
+  mark.renderOrder = 997;
+  origin.add(mark);
   scene.add(origin);
 
   /* ---------- 点 ---------- */
