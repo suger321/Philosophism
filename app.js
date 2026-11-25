@@ -239,7 +239,7 @@
 
   function attachLabel(mesh, name) {
     const el = document.createElement('div');
-    el.className = 'lbl';
+    el.className = 'plbl';
     el.textContent = name;
     labelsEl.appendChild(el);
     mesh.userData.el = el;
@@ -698,7 +698,8 @@
 
   /* ---------- 循环 ---------- */
   let last = performance.now();
-  function loop(now) {
+  function tick(now) {
+    window.__tick = (window.__tick || 0) + 1;
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
 
@@ -760,6 +761,15 @@
     updateLabels();
     updateTip();
     renderer.render(scene, camera);
+  }
+
+  function loop(now) {
+    try {
+      tick(now);
+    } catch (e) {
+      window.__ismErr = (window.__ismErr || 0) + 1;
+      window.__ismErrMsg = String((e && e.stack) || e).slice(0, 400);
+    }
     requestAnimationFrame(loop);
   }
 
@@ -880,6 +890,7 @@
       it.el.classList.toggle('sel', isSel);
       it.el.classList.toggle('hov', isHov && !isSel);
     }
+    window.__labelDbg = { total: nodes.length, list: list.length, kept: list.filter(x => x.keep).length };
   }
 
   /* ---------- 尺寸 ---------- */

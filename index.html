@@ -27,7 +27,7 @@
 
   /* 点的名称用 HTML 渲染，永远不会被 3D 球体遮挡 */
   #labels { position: fixed; inset: 0; z-index: 12; pointer-events: none; overflow: hidden; }
-  .lbl {
+  .plbl {
     position: absolute; left: 0; top: 0; pointer-events: none;
     font: 600 15px/1.2 "PingFang SC", "Microsoft YaHei", system-ui;
     color: #d6e6f6; white-space: nowrap;
@@ -37,8 +37,8 @@
     backface-visibility: hidden;
     -webkit-font-smoothing: antialiased;
   }
-  .lbl.sel { color: var(--gold); }
-  .lbl.hov { color: #a9ecff; }
+  .plbl.sel { color: var(--gold); }
+  .plbl.hov { color: #a9ecff; }
   #scene.dragging { cursor: grabbing; }
   #scene.locked { cursor: none; }
 
@@ -244,7 +244,7 @@
     #panel .bd { padding: 12px 18px 24px; }
     #panel .close { top: 10px; right: 12px; }
     #tip { display: none; }
-    .lbl { font-size: 13px; }
+    .plbl { font-size: 13px; }
     /* 手机上没有鼠标转头，漫游模式不适用 */
     #btnMode { display: none; }
     #btnMode2 { right: 10px; bottom: 10px; padding: 8px 14px; font-size: 12px; }
@@ -324,7 +324,7 @@
 </div>
 
 <script src="./vendor/three.min.js"></script>
-<script src="./data/isms.js?v=10"></script>
-<script src="./app.js?v=10"></script>
+<script src="./data/isms.js?v=13"></script>
+<script src="./app.js?v=13"></script>
 </body>
 </html>
