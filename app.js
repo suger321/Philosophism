@@ -510,6 +510,136 @@
     if (e.key === 'Escape') closePanel();
   });
 
+  /* ---------- 实验室：推一把 / 混一下 ---------- */
+  const RE = D.reactions || {};
+  const EXT = RE.extreme || {};
+  const BLENDS = (RE.blend || []).filter(x => x.to);
+
+  const actsEl = document.getElementById('acts');
+  const verdictEl = document.getElementById('verdict');
+  let mixing = false;
+  let verdictTimer = null;
+  let mixSet = new Set();
+  const DIM_GRAY = new THREE.Color(0x4a505c);
+
+  function blendOf(a, b) {
+    if (!a || !b || a === b) return null;
+    return BLENDS.find(x => (x.a === a && x.b === b) || (x.a === b && x.b === a)) || null;
+  }
+
+  function hideVerdict() {
+    verdictEl.classList.remove('on');
+    verdictEl.textContent = '';
+  }
+
+  function showVerdict(title, text, ms) {
+    verdictEl.textContent = '';
+    const t = document.createElement('div');
+    t.className = 'vt';
+    t.textContent = title;
+    const d = document.createElement('div');
+    d.className = 'vd';
+    d.textContent = text;
+    verdictEl.append(t, d);
+    verdictEl.classList.add('on');
+    clearTimeout(verdictTimer);
+    if (ms !== 0) verdictTimer = setTimeout(hideVerdict, ms || 4200);
+  }
+
+  function applyExtreme(r) {
+    const from = selected ? selected.userData.ism : null;
+    const to = isms.find(i => i.id === r.to);
+    showVerdict(`${from ? from.name : ''} → ${to ? to.name : '另一个极端'}`, r.note);
+    const target = nodes.find(n => n.visible && n.userData.ism.id === r.to);
+    if (target) setTimeout(() => { if (target.visible) focusOn(target); }, 500);
+  }
+
+  function openPush() {
+    if (!selected) return;
+    const list = EXT[selected.userData.ism.id] || [];
+    if (!list.length) {
+      showVerdict('推不动', '这个主义还没写极端化的反应，之后补。');
+      return;
+    }
+    if (list.length === 1) { applyExtreme(list[0]); return; }
+
+    verdictEl.textContent = '';
+    const t = document.createElement('div');
+    t.className = 'vt';
+    t.textContent = '往哪个方向推？';
+    const box = document.createElement('div');
+    box.className = 'vd';
+    list.forEach(r => {
+      const b = document.createElement('button');
+      b.className = 'act';
+      b.style.cssText = 'width:auto;height:auto;padding:6px 13px;border-radius:999px;margin:7px 8px 0 0;font-size:12.5px';
+      b.textContent = r.label;
+      b.onclick = () => { hideVerdict(); applyExtreme(r); };
+      box.appendChild(b);
+    });
+    verdictEl.append(t, box);
+    verdictEl.classList.add('on');
+    clearTimeout(verdictTimer);
+  }
+
+  function toggleMix() {
+    if (!selected) return;
+    mixing = !mixing;
+    if (!mixing) {
+      setSelected(selected);
+      hideVerdict();
+      return;
+    }
+    const cur = selected.userData.ism.id;
+    let count = 0;
+    mixSet = new Set([selected]);
+    nodes.forEach(n => {
+      if (!n.visible || n === selected) return;
+      const ok = !!blendOf(cur, n.userData.ism.id);
+      if (ok) { count++; mixSet.add(n); }
+      n.material.opacity = ok ? 1 : 0.16;
+      if (n.userData.baseColor) {
+        n.material.color.copy(ok ? n.userData.baseColor : DIM_GRAY);
+      }
+    });
+    showVerdict(
+      '混一下',
+      count
+        ? `有 ${count} 个能和它起反应，点一个试试；暗掉的混不出结果。`
+        : '这个主义目前没有能起反应的组合。',
+      0
+    );
+  }
+
+  function finishBlend(r) {
+    const a = isms.find(i => i.id === r.a);
+    const b = isms.find(i => i.id === r.b);
+    const to = isms.find(i => i.id === r.to);
+    showVerdict(
+      `${a ? a.name : ''} + ${b ? b.name : ''} → ${to ? to.name : '抵消'}`,
+      r.note
+    );
+    mixing = false;
+    setSelected(selected);
+    const target = nodes.find(n => n.visible && n.userData.ism.id === r.to);
+    if (target) setTimeout(() => { if (target.visible) focusOn(target); }, 700);
+  }
+
+  actsEl.addEventListener('click', e => {
+    const act = e.target && e.target.dataset ? e.target.dataset.act : null;
+    if (act === 'push') openPush();
+    if (act === 'mix') toggleMix();
+  });
+
+  function updateActs() {
+    if (!selected || mixing) { actsEl.classList.remove('on'); return; }
+    _v3.copy(selected.position).project(camera);
+    if (_v3.z > 1) { actsEl.classList.remove('on'); return; }
+    actsEl.classList.add('on');
+    actsEl.style.left = ((_v3.x * 0.5 + 0.5) * innerWidth + 30) + 'px';
+    actsEl.style.top = ((-_v3.y * 0.5 + 0.5) * innerHeight) + 'px';
+  }
+
   const ORIGIN_POS = new THREE.Vector3(0, 0, 0);
 
   function pick(cx, cy) {
@@ -542,6 +672,17 @@
       resetView();
       return;
     }
+    if (mixing && selected) {
+      const otherId = hit.object.userData.ism.id;
+      const r = blendOf(selected.userData.ism.id, otherId);
+      if (!r) {
+        showVerdict('混不出来', '这两个放在一起会互相抵消，什么也不会发生。', 2400);
+        return;
+      }
+      finishBlend(r);
+      return;
+    }
+
     setSelected(hit.object);
     openPanel(hit.object.userData.ism);
     focusOn(hit.object);
@@ -628,6 +769,8 @@
 
   function closePanel() {
     if (selected && selected === sparkNode) fadeOutSpark();
+    if (mixing) { mixing = false; setSelected(null); }
+    hideVerdict();
     panel.classList.remove('open');
     selected = null;
   }
@@ -896,6 +1039,7 @@
     camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
 
     updateLabels();
+    updateActs();
     updateTip();
     renderer.render(scene, camera);
   }
@@ -1019,7 +1163,12 @@
       }
 
       it.el.style.transform = `translate3d(${(st.px - w / 2).toFixed(2)}px,${(st.py - h).toFixed(2)}px,0)`;
-      const op = (isSel || isHov) ? 1 : Math.max(0.42, Math.min(0.95, 1.85 - it.d / 42));
+      let op;
+      if (mixing && it.n !== selected && !mixSet.has(it.n)) {
+        op = 0.1;
+      } else {
+        op = (isSel || isHov) ? 1 : Math.max(0.42, Math.min(0.95, 1.85 - it.d / 42));
+      }
       if (st.op === undefined || Math.abs(op - st.op) > 0.04) {
         it.el.style.opacity = String(op.toFixed(2));
         st.op = op;

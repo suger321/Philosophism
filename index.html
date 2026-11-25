@@ -192,6 +192,33 @@
   .tool .ico { display: none; }
   #panel .handle { display: none; }
 
+  /* 选中后浮现的两个小动作 */
+  #acts { position: fixed; z-index: 18; display: none; transform: translate(0, -50%); flex-direction: column; gap: 6px; }
+  #acts.on { display: flex; }
+  .act {
+    width: 27px; height: 27px; padding: 0; border-radius: 50%; cursor: pointer;
+    border: 1px solid rgba(255, 209, 102, .55);
+    background: rgba(18, 14, 6, .88); color: var(--gold);
+    font: 600 14px/1 "PingFang SC", system-ui;
+    transition: .16s;
+  }
+  .act:hover { background: var(--gold); color: #1a1408; }
+
+  /* 反应结果浮层 */
+  #verdict {
+    position: fixed; left: 50%; bottom: 92px; z-index: 26;
+    transform: translateX(-50%) translateY(12px);
+    max-width: min(540px, 88vw); padding: 14px 18px;
+    border-radius: 12px; border: 1px solid rgba(255, 209, 102, .32);
+    background: rgba(10, 14, 22, .96);
+    backdrop-filter: blur(10px);
+    opacity: 0; pointer-events: none;
+    transition: opacity .24s, transform .24s;
+  }
+  #verdict.on { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+  #verdict .vt { font-size: 14px; font-weight: 600; color: var(--gold); margin-bottom: 5px; }
+  #verdict .vd { font-size: 13px; line-height: 1.75; color: #b6c4d8; }
+
   /* 右下角模式切换 */
   #btnMode2 {
     position: fixed; right: 18px; bottom: 18px; z-index: 22;
@@ -300,6 +327,12 @@
   <div class="bd" id="pBody"></div>
 </aside>
 
+<div id="acts">
+  <button class="act" data-act="push" title="推一把">↑</button>
+  <button class="act" data-act="mix" title="混一下">＋</button>
+</div>
+<div id="verdict"></div>
+
 <button id="btnMode2">哲学模式</button>
 
 <div id="credits">
@@ -349,7 +382,7 @@
 </div>
 
 <script src="./vendor/three.min.js"></script>
-<script src="./data/isms.js?v=16"></script>
-<script src="./app.js?v=16"></script>
+<script src="./data/isms.js?v=18"></script>
+<script src="./app.js?v=18"></script>
 </body>
 </html>
