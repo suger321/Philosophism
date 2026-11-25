@@ -2,6 +2,7 @@
 (function () {
   const D = window.ISM_DATA;
   const SPAN = 8;
+  const isTouch = (window.matchMedia && matchMedia('(pointer: coarse)').matches) || innerWidth < 820;
 
   const AXIS = {
     mood: { neg: '消极', pos: '积极', color: 0xff7b7b },
@@ -38,14 +39,14 @@
   /* ---------- 场景 ---------- */
   const canvas = document.getElementById('scene');
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(devicePixelRatio, isTouch ? 1.5 : 2));
   const scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(0x06070c, 0.012);
 
   const camera = new THREE.PerspectiveCamera(46, 1, 0.1, 400);
 
   // 分析视角（球坐标）
-  const orbit = { theta: 0.95, phi: 1.02, radius: 33, target: new THREE.Vector3() };
+  const orbit = { theta: 0.95, phi: 1.02, radius: isTouch ? 46 : 33, target: new THREE.Vector3() };
   // 漫游视角
   const roam = { pos: new THREE.Vector3(0, 3, 26), yaw: 0, pitch: 0, vel: 0 };
 
@@ -118,9 +119,10 @@
     const hex = v => '#' + v.toString(16).padStart(6, '0');
     [0, 1, 2].forEach(i => {
       const key = frame.axes[i];
-      const plus = i === 0 ? new THREE.Vector3(SPAN + 2.1, 0, 0)
-        : i === 1 ? new THREE.Vector3(0, SPAN + 2.1, 0)
-          : new THREE.Vector3(0, 0, SPAN + 2.1);
+      const ext = SPAN + (isTouch ? 1.3 : 2.1);
+      const plus = i === 0 ? new THREE.Vector3(ext, 0, 0)
+        : i === 1 ? new THREE.Vector3(0, ext, 0)
+          : new THREE.Vector3(0, 0, ext);
       const minus = plus.clone().multiplyScalar(-1);
       const s1 = makeLabelSprite(AXIS[key].pos, hex(AXIS[key].color));
       s1.position.copy(plus);
@@ -171,7 +173,7 @@
   const ptGroup = new THREE.Group();
   scene.add(ptGroup);
 
-  const geo = new THREE.SphereGeometry(0.32, 18, 18);
+  const geo = new THREE.SphereGeometry(isTouch ? 0.38 : 0.32, 18, 18);
   const nodes = [];
   let showLabels = false;
   let hovered = null;
@@ -227,7 +229,7 @@
 
   function resetView() {
     orbit.target.set(0, 0, 0);
-    orbit.radius = 33;
+    orbit.radius = isTouch ? 46 : 33;
     orbit.theta = 0.95;
     orbit.phi = 1.02;
     roam.pos.set(0, 3, 26);
@@ -239,11 +241,15 @@
   /* ---------- 交互 ---------- */
   let dragging = false, downX = 0, downY = 0, moved = 0;
   let mouseX = 0, mouseY = 0;
+  const pointers = new Map();
+  let pinch = null;
   const ray = new THREE.Raycaster();
   const ndc = new THREE.Vector2();
   const tip = document.getElementById('tip');
 
   canvas.addEventListener('pointerdown', e => {
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
     if (mode === 'roam') {
       if (document.pointerLockElement !== canvas) {
         try {
@@ -253,12 +259,33 @@
       }
       return;
     }
+
+    if (pointers.size === 2) {
+      const [a, b] = [...pointers.values()];
+      pinch = { dist: Math.hypot(a.x - b.x, a.y - b.y), radius: orbit.radius };
+      dragging = false;
+      canvas.classList.remove('dragging');
+      return;
+    }
+
     dragging = true; downX = e.clientX; downY = e.clientY; moved = 0;
     canvas.classList.add('dragging');
   });
 
   canvas.addEventListener('pointermove', e => {
     mouseX = e.clientX; mouseY = e.clientY;
+    if (!pointers.has(e.pointerId)) return;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (mode === 'analyze' && pinch && pointers.size >= 2) {
+      const [a, b] = [...pointers.values()];
+      const d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (d > 0 && pinch.dist > 0) {
+        orbit.radius = Math.max(5, Math.min(60, pinch.radius * (pinch.dist / d)));
+      }
+      return;
+    }
+
     if (mode === 'analyze' && dragging) {
       const dx = e.clientX - downX, dy = e.clientY - downY;
       moved += Math.abs(dx) + Math.abs(dy);
@@ -268,12 +295,16 @@
     }
   });
 
-  window.addEventListener('pointerup', e => {
+  function endPointer(e) {
+    pointers.delete(e.pointerId);
+    if (pointers.size < 2) pinch = null;
     if (!dragging) return;
     dragging = false;
     canvas.classList.remove('dragging');
-    if (moved < 5) pick(e.clientX, e.clientY);
-  });
+    if (moved < 6) pick(e.clientX, e.clientY);
+  }
+  window.addEventListener('pointerup', endPointer);
+  window.addEventListener('pointercancel', endPointer);
 
   canvas.addEventListener('wheel', e => {
     e.preventDefault();
@@ -309,7 +340,10 @@
     ndc.y = -((cy - r.top) / r.height) * 2 + 1;
     ray.setFromCamera(ndc, camera);
     const hit = ray.intersectObjects(nodes.concat(origin), false)[0];
-    if (!hit) return;
+    if (!hit) {
+      if (panel.classList.contains('open')) closePanel();
+      return;
+    }
     if (hit.object.userData.isOrigin) { closePanel(); resetView(); return; }
     selected = hit.object;
     openPanel(hit.object.userData.ism);
@@ -318,7 +352,7 @@
 
   // 悬停提示
   function updateTip() {
-    if (mode === 'roam' || dragging) { tip.style.opacity = 0; return; }
+    if (isTouch || mode === 'roam' || dragging) { tip.style.opacity = 0; return; }
     const r = canvas.getBoundingClientRect();
     ndc.x = ((mouseX - r.left) / r.width) * 2 - 1;
     ndc.y = -((mouseY - r.top) / r.height) * 2 + 1;
@@ -452,7 +486,8 @@
   const btnMode = document.getElementById('btnMode');
   btnMode.addEventListener('click', () => {
     mode = mode === 'analyze' ? 'roam' : 'analyze';
-    btnMode.textContent = mode === 'analyze' ? '自由漫游' : '分析视图';
+    const mlbl = btnMode.querySelector('.lbl');
+    if (mlbl) mlbl.textContent = mode === 'analyze' ? '自由漫游' : '分析视图';
     btnMode.classList.toggle('on', mode === 'roam');
     document.exitPointerLock && document.exitPointerLock();
     if (mode === 'roam') {
@@ -475,7 +510,8 @@
   document.getElementById('btnLabels').addEventListener('click', e => {
     showLabels = !showLabels;
     e.currentTarget.classList.toggle('on', showLabels);
-    e.currentTarget.textContent = showLabels ? '隐藏名称' : '显示名称';
+    const lbl = e.currentTarget.querySelector('.lbl');
+    if (lbl) lbl.textContent = showLabels ? '隐藏名称' : '显示名称';
   });
 
   /* ---------- 添加主义 ---------- */
@@ -600,7 +636,7 @@
   /* ---------- 尺寸 ---------- */
   function resize() {
     const w = innerWidth, h = innerHeight;
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(devicePixelRatio, isTouch ? 1.5 : 2));
     renderer.setSize(w, h, false);
     canvas.style.width = w + 'px';
     canvas.style.height = h + 'px';

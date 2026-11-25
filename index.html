@@ -23,7 +23,7 @@
     font: 14px/1.6 "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
     overflow: hidden;
   }
-  #scene { position: fixed; inset: 0; display: block; cursor: grab; }
+  #scene { position: fixed; inset: 0; display: block; cursor: grab; touch-action: none; }
   #scene.dragging { cursor: grabbing; }
   #scene.locked { cursor: none; }
 
@@ -171,6 +171,54 @@
     border: 1px solid var(--line); background: rgba(255,255,255,.04); color: var(--ink);
   }
   .btn.primary { background: var(--cy); color: #06121a; border-color: var(--cy); font-weight: 600; }
+
+  /* 桌面只显示文字，图标留给窄屏 */
+  .tool .ico { display: none; }
+  #panel .handle { display: none; }
+
+  /* ---------- 手机 / 窄屏 ---------- */
+  @media (max-width: 820px) {
+    #topbar { padding: 8px 10px; gap: 6px; flex-wrap: nowrap; }
+    .brand { display: none; }
+    .frames { flex: 1 1 auto; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
+    .frames::-webkit-scrollbar { display: none; }
+    .fbtn { flex: none; padding: 6px 11px; font-size: 12px; }
+    .tool { flex: none; padding: 6px 9px; font-size: 13px; }
+    .tool .ico { display: inline; }
+    .tool .lbl { display: none; }
+
+    #legend { left: 10px; bottom: 10px; max-width: 46vw; padding: 8px 10px; font-size: 11px; }
+    #legend h4 { margin-bottom: 5px; font-size: 10px; letter-spacing: .1em; }
+    #legend #hint { display: none; }
+    #credits { display: none; }
+
+    #intro { overflow-y: auto; align-content: start; padding: 26px 18px; }
+    .card { margin: auto 0; }
+    .card .kicker { margin-bottom: 10px; }
+    .card h1 { font-size: 26px; margin-bottom: 14px; }
+    .card p { font-size: 13.5px; line-height: 1.9; text-align: left; }
+    .card p.lead { font-size: 16px; text-align: center; }
+
+    #panel {
+      top: auto; left: 0; right: 0; bottom: 0; width: 100%;
+      max-height: 74vh; border-left: none;
+      border-top: 1px solid var(--line);
+      border-radius: 16px 16px 0 0;
+      transform: translateY(103%);
+    }
+    #panel.open { transform: none; }
+    #panel .handle {
+      display: block; width: 42px; height: 4px; border-radius: 2px;
+      background: rgba(160,190,220,.35); margin: 8px auto 0; flex: none;
+    }
+    #panel .hd { padding: 12px 18px 10px; }
+    #panel .hd .cn { font-size: 19px; }
+    #panel .bd { padding: 12px 18px 24px; }
+    #panel .close { top: 10px; right: 12px; }
+    #tip { display: none; }
+    /* 手机上没有鼠标转头，漫游模式不适用 */
+    #btnMode { display: none; }
+  }
 </style>
 </head>
 <body>
@@ -180,10 +228,10 @@
   <div class="brand">主义星图<small>ISM ATLAS</small></div>
   <div class="frames" id="frames"></div>
   <div class="spacer"></div>
-  <button class="tool" id="btnLabels">显示名称</button>
-  <button class="tool" id="btnMode">自由漫游</button>
-  <button class="tool" id="btnReset">回到全景</button>
-  <button class="tool" id="btnAdd">＋ 添加</button>
+  <button class="tool" id="btnLabels"><span class="ico">Aa</span><span class="lbl">显示名称</span></button>
+  <button class="tool" id="btnMode"><span class="ico">◎</span><span class="lbl">自由漫游</span></button>
+  <button class="tool" id="btnReset"><span class="ico">⌂</span><span class="lbl">回到全景</span></button>
+  <button class="tool" id="btnAdd"><span class="ico">＋</span><span class="lbl">添加</span></button>
 </div>
 
 <div id="legend">
@@ -195,6 +243,7 @@
 <div id="tip"></div>
 
 <aside id="panel">
+  <div class="handle"></div>
   <button class="close" id="btnClose">×</button>
   <div class="hd">
     <div class="cn" id="pName"></div>
