@@ -191,6 +191,18 @@
   origin.add(mark);
   scene.add(origin);
 
+  /* ---------- 选中光环 ---------- */
+  const selRing = new THREE.Mesh(
+    new THREE.RingGeometry(0.44, 0.62, 56),
+    new THREE.MeshBasicMaterial({
+      color: 0xffd166, transparent: true, opacity: 0.9,
+      side: THREE.DoubleSide, depthWrite: false, depthTest: false
+    })
+  );
+  selRing.renderOrder = 991;
+  selRing.visible = false;
+  scene.add(selRing);
+
   /* ---------- 点 ---------- */
   const ptGroup = new THREE.Group();
   scene.add(ptGroup);
@@ -205,11 +217,13 @@
   function colorFor(v) {
     const t = (Math.max(-1, Math.min(1, v)) + 1) / 2;
     if (curMode === 'life') {
-      const h = (6 + t * 36) / 360;
-      return new THREE.Color().setHSL(h, 0.86, 0.54 + t * 0.08);
+      // 玫红 → 红 → 橙 → 金，色相与明度一起变，差距拉开
+      const h = ((338 + t * 52) % 360) / 360;
+      return new THREE.Color().setHSL(h, 0.9, 0.44 + t * 0.22);
     }
-    const h = (252 - t * 68) / 360;
-    return new THREE.Color().setHSL(h, 0.74, 0.55 + t * 0.07);
+    // 靛蓝 → 紫 → 青绿
+    const h = ((262 - t * 88) % 360) / 360;
+    return new THREE.Color().setHSL(h, 0.8, 0.46 + t * 0.18);
   }
 
   function posOf(ism, f) {
@@ -221,21 +235,41 @@
     );
   }
 
+  const labelsEl = document.getElementById('labels');
+
+  function attachLabel(mesh, name) {
+    const el = document.createElement('div');
+    el.className = 'lbl';
+    el.textContent = name;
+    labelsEl.appendChild(el);
+    mesh.userData.el = el;
+  }
+
   function buildNodes() {
     isms.forEach(ism => {
-      const mat = new THREE.MeshBasicMaterial({ color: colorFor((ism.coords || {})[frame.axes[0]] || 0) });
+      const base = colorFor((ism.coords || {})[frame.axes[0]] || 0);
+      const mat = new THREE.MeshBasicMaterial({ color: base.clone(), transparent: true });
       const mesh = new THREE.Mesh(geo, mat);
       mesh.position.copy(posOf(ism, frame));
       mesh.visible = (ism.mode || 'life') === curMode;
       mesh.userData.ism = ism;
       mesh.userData.target = mesh.position.clone();
-      const lab = makeLabelSprite(ism.name, 'rgba(214,230,246,0.92)', 28, 0.0138);
-      lab.position.copy(mesh.position).add(new THREE.Vector3(0, 0.62, 0));
-      lab.visible = false;
-      mesh.userData.label = lab;
+      mesh.userData.baseColor = base;
+      attachLabel(mesh, ism.name);
       ptGroup.add(mesh);
-      ptGroup.add(lab);
       nodes.push(mesh);
+    });
+  }
+
+  // 选中：其余点降透明度并压暗，被选中的保持原色
+  function setSelected(mesh) {
+    selected = mesh;
+    nodes.forEach(n => {
+      const dim = !!mesh && n !== mesh;
+      n.material.opacity = dim ? 0.52 : 1;
+      if (n.userData.baseColor) {
+        n.material.color.copy(n.userData.baseColor).multiplyScalar(dim ? 0.78 : 1);
+      }
     });
   }
 
@@ -370,11 +404,17 @@
     ray.setFromCamera(ndc, camera);
     const hit = ray.intersectObjects(nodes.filter(n => n.visible).concat(origin), false)[0];
     if (!hit) {
-      if (panel.classList.contains('open')) closePanel();
+      closePanel();
+      setSelected(null);
       return;
     }
-    if (hit.object.userData.isOrigin) { closePanel(); resetView(); return; }
-    selected = hit.object;
+    if (hit.object.userData.isOrigin) {
+      closePanel();
+      setSelected(null);
+      resetView();
+      return;
+    }
+    setSelected(hit.object);
     openPanel(hit.object.userData.ism);
     focusOn(hit.object);
   }
@@ -502,8 +542,9 @@
       if (!n.visible) return;
       n.userData.target = posOf(n.userData.ism, f);
       const v = (n.userData.ism.coords || {})[f.axes[0]] || 0;
-      n.material.color.copy(colorFor(v));
+      n.userData.baseColor = colorFor(v);
     });
+    setSelected(selected);
     if (selected) closePanel();
   }
 
@@ -567,12 +608,12 @@
     nodes.forEach(n => {
       const on = (n.userData.ism.mode || 'life') === m;
       n.visible = on;
-      if (n.userData.label) n.userData.label.visible = false;
       if (on) {
         n.userData.target = posOf(n.userData.ism, frame);
-        n.material.color.copy(colorFor((n.userData.ism.coords || {})[frame.axes[0]] || 0));
+        n.userData.baseColor = colorFor((n.userData.ism.coords || {})[frame.axes[0]] || 0);
       }
     });
+    setSelected(null);
     rebuildAxes();
     renderLegend();
     closePanel();
@@ -632,18 +673,16 @@
     } catch (e) { alert('本地保存失败，可能是浏览器禁用了存储'); }
 
     isms.push(item);
-    const mat = new THREE.MeshBasicMaterial({ color: colorFor(coords[frame.axes[0]] || 0) });
+    const base = colorFor(coords[frame.axes[0]] || 0);
+    const mat = new THREE.MeshBasicMaterial({ color: base.clone(), transparent: true });
     const mesh = new THREE.Mesh(geo, mat);
     mesh.position.copy(posOf(item, frame));
     mesh.visible = true;
     mesh.userData.ism = item;
     mesh.userData.target = mesh.position.clone();
-    const lab = makeLabelSprite(item.name, 'rgba(214,230,246,0.92)', 28, 0.0138);
-    lab.position.copy(mesh.position).add(new THREE.Vector3(0, 0.62, 0));
-    lab.visible = false;
-    mesh.userData.label = lab;
+    mesh.userData.baseColor = base;
+    attachLabel(mesh, item.name);
     ptGroup.add(mesh);
-    ptGroup.add(lab);
     nodes.push(mesh);
 
     addEl.classList.remove('show');
@@ -678,21 +717,17 @@
     // 点位过渡
     nodes.forEach(n => {
       n.position.lerp(n.userData.target, 1 - Math.pow(0.001, dt));
-      const lab = n.userData.label;
-      if (lab) {
-        lab.position.set(n.position.x, n.position.y + 0.62, n.position.z);
-        lab.visible = n.visible && (showLabels || n === hovered || n === selected);
-        if (lab.visible && lab.userData.base) {
-          const d = camera.position.distanceTo(n.position);
-          const f = isTouch
-            ? Math.max(0.4, Math.min(1.3, d / 54))
-            : Math.max(0.5, Math.min(2.2, d / 30));
-          lab.scale.set(lab.userData.base.x * f, lab.userData.base.y * f, 1);
-          // 远的淡一点，重叠时能分出前后
-          lab.material.opacity = Math.max(0.34, Math.min(0.96, 1.9 - d / 40));
-        }
-      }
     });
+
+    // 选中光环跟随
+    if (selected) {
+      selRing.visible = true;
+      selRing.position.copy(selected.position);
+      selRing.lookAt(camera.position);
+      selRing.scale.setScalar(1 + 0.05 * Math.sin(now / 380));
+    } else {
+      selRing.visible = false;
+    }
 
     if (mode === 'analyze') {
       applyOrbit();
@@ -717,40 +752,65 @@
       applyRoam();
     }
 
-    cullLabels();
+    updateLabels();
     updateTip();
     renderer.render(scene, camera);
     requestAnimationFrame(loop);
   }
 
-  // 标签抽稀：屏幕位置太近的只留最近的，避免文字叠成一坨
+  // HTML 标签：投影到屏幕定位，同格只留最近的一个
   const _v3 = new THREE.Vector3();
-  function cullLabels() {
-    if (!showLabels) return;
+  function updateLabels() {
     const W = innerWidth, H = innerHeight;
-    const list = nodes.filter(n => n.visible && n.userData.label && n.userData.label.visible);
-    list.sort((a, b) => {
-      if (a === selected) return -1;
-      if (b === selected) return 1;
-      if (a === hovered) return -1;
-      if (b === hovered) return 1;
-      return camera.position.distanceTo(a.position) - camera.position.distanceTo(b.position);
-    });
-    const used = new Set();
-    const cellW = isTouch ? 46 : 44;
-    const cellH = isTouch ? 23 : 21;
-    for (const n of list) {
-      if (n === selected || n === hovered) {
-        _v3.copy(n.position).project(camera);
-        used.add(Math.floor(((_v3.x * 0.5 + 0.5) * W) / cellW) + ':' + Math.floor(((-_v3.y * 0.5 + 0.5) * H) / cellH));
-        continue;
+    const list = [];
+
+    nodes.forEach(n => {
+      const el = n.userData.el;
+      if (!el) return;
+      const on = n.visible && (showLabels || n === hovered || n === selected);
+      if (!on) { el.style.display = 'none'; return; }
+
+      _v3.copy(n.position);
+      _v3.project(camera);
+      if (_v3.z > 1) { el.style.display = 'none'; return; }
+
+      const sx = (_v3.x * 0.5 + 0.5) * W;
+      const sy = (-_v3.y * 0.5 + 0.5) * H;
+      if (sx < -120 || sx > W + 120 || sy < -60 || sy > H + 60) {
+        el.style.display = 'none';
+        return;
       }
-      _v3.copy(n.position).project(camera);
-      if (_v3.z > 1) { n.userData.label.visible = false; continue; }
-      const key = Math.floor(((_v3.x * 0.5 + 0.5) * W) / cellW) + ':' + Math.floor(((-_v3.y * 0.5 + 0.5) * H) / cellH);
-      if (used.has(key)) n.userData.label.visible = false;
-      else used.add(key);
-    }
+      list.push({ n, el, sx, sy, d: camera.position.distanceTo(n.position) });
+    });
+
+    list.sort((a, b) => {
+      if (a.n === selected) return -1;
+      if (b.n === selected) return 1;
+      if (a.n === hovered) return -1;
+      if (b.n === hovered) return 1;
+      return a.d - b.d;
+    });
+
+    const used = new Set();
+    const cw = isTouch ? 56 : 50;
+    const ch = isTouch ? 26 : 23;
+
+    list.forEach(it => {
+      const isSel = it.n === selected;
+      const isHov = it.n === hovered;
+      const key = Math.floor(it.sx / cw) + ':' + Math.floor(it.sy / ch);
+      if (!isSel && !isHov && used.has(key)) {
+        it.el.style.display = 'none';
+        return;
+      }
+      used.add(key);
+      const lift = (isSel || isHov) ? 24 : 13;
+      it.el.style.display = '';
+      it.el.style.transform = `translate(${it.sx.toFixed(1)}px,${(it.sy - lift).toFixed(1)}px) translate(-50%,-100%)`;
+      it.el.style.opacity = (isSel || isHov) ? '1' : String(Math.max(0.42, Math.min(0.95, 1.85 - it.d / 42)));
+      it.el.classList.toggle('sel', isSel);
+      it.el.classList.toggle('hov', isHov && !isSel);
+    });
   }
 
   /* ---------- 尺寸 ---------- */
