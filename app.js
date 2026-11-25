@@ -352,8 +352,8 @@
     if (mode === 'analyze' && dragging) {
       const dx = e.clientX - downX, dy = e.clientY - downY;
       moved += Math.abs(dx) + Math.abs(dy);
-      orbit.theta -= dx * 0.005;
-      orbit.phi = Math.max(0.18, Math.min(Math.PI - 0.18, orbit.phi - dy * 0.005));
+      orbit.theta -= dx * 0.0038;
+      orbit.phi = Math.max(0.18, Math.min(Math.PI - 0.18, orbit.phi - dy * 0.0038));
       downX = e.clientX; downY = e.clientY;
     }
   });
@@ -752,6 +752,11 @@
       applyRoam();
     }
 
+    // 关键：先让相机矩阵追上这一帧的位置，否则标签会拿上一帧的矩阵算投影，
+    // 快速转动时标签和球体错开一帧，看起来就是抖
+    camera.updateMatrixWorld();
+    camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
+
     updateLabels();
     updateTip();
     renderer.render(scene, camera);
@@ -810,7 +815,10 @@
 
       // 用文字实际宽高做矩形碰撞，比固定格子准
       list.forEach(it => {
-        if (it.st.w === undefined) it.st.w = it.el.offsetWidth || 60;
+        if (it.st.w === undefined) {
+          it.st.w = it.el.offsetWidth || 60;
+          it.st.h = it.el.offsetHeight || 20;
+        }
       });
 
       const placed = [];
@@ -845,18 +853,30 @@
       const isSel = it.n === selected;
       const isHov = it.n === hovered;
       const lift = (isSel || isHov) ? 24 : 13;
-      const x = it.sx;
-      const y = it.sy - lift;
       const st = it.st;
-      const wasHidden = it.el.style.display === 'none';
+      const w = st.w || 60;
+      const h = st.h || 20;
 
+      const wasHidden = it.el.style.display === 'none';
       it.el.style.display = '';
-      // 只有位移超过半像素才重设 transform，静止时不碰 DOM
-      if (wasHidden || st.lift !== lift || !(Math.abs(x - st.lx) < 0.6 && Math.abs(y - st.ly) < 0.6)) {
-        it.el.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0) translate(-50%,-100%)`;
-        st.lx = x; st.ly = y; st.lift = lift;
+
+      const tx = it.sx;
+      const ty = it.sy - lift;
+
+      if (wasHidden || st.px === undefined) {
+        st.px = tx; st.py = ty;
+      } else {
+        // 低通：跟得太紧会把每一帧的微小抖动都放大成视觉抖动
+        st.px += (tx - st.px) * 0.6;
+        st.py += (ty - st.py) * 0.6;
       }
-      it.el.style.opacity = (isSel || isHov) ? '1' : String(Math.max(0.42, Math.min(0.95, 1.85 - it.d / 42)));
+
+      it.el.style.transform = `translate3d(${(st.px - w / 2).toFixed(2)}px,${(st.py - h).toFixed(2)}px,0)`;
+      const op = (isSel || isHov) ? 1 : Math.max(0.42, Math.min(0.95, 1.85 - it.d / 42));
+      if (st.op === undefined || Math.abs(op - st.op) > 0.04) {
+        it.el.style.opacity = String(op.toFixed(2));
+        st.op = op;
+      }
       it.el.classList.toggle('sel', isSel);
       it.el.classList.toggle('hov', isHov && !isSel);
     }
