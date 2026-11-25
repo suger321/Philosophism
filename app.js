@@ -394,7 +394,7 @@
     const dir = new THREE.Vector3().subVectors(camera.position, p).normalize();
     if (mode === 'analyze') {
       orbit.target.copy(p);
-      orbit.radius = 16;
+      orbit.radius = 20;
       if (orbit.phi > 1.45) orbit.phi = 1.3;
     } else {
       camTarget.pos = p.clone().add(dir.multiplyScalar(7));
@@ -778,6 +778,7 @@
     pEn.textContent = ism.nameEn || '';
     pOne.textContent = ism.oneLine || '';
     const parts = [];
+    if (ism.epigraph) parts.push(`<div class="epigraph">${esc(ism.epigraph)}</div>`);
     if (ism.definition) parts.push(`<h5>这是什么</h5><p>${esc(ism.definition)}</p>`);
     if (ism.when) parts.push(`<h5>什么时候会想它</h5><p style="color:#a9c7e6">${esc(ism.when)}</p>`);
     if (ism.tenets && ism.tenets.length) {
