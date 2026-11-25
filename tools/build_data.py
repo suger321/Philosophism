@@ -1,7 +1,7 @@
 import json
 import pathlib
 
-root = pathlib.Path(r'D:\WORK\project\ism-map')
+root = pathlib.Path(__file__).resolve().parent.parent
 isms = json.load(open(root / 'data' / 'isms.json', encoding='utf-8'))
 srcs = json.load(open(root / 'data' / 'sources.json', encoding='utf-8'))
 edit = json.load(open(root / 'data' / 'editorial.json', encoding='utf-8'))

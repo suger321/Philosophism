@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": "1.1-mixed",
+    "version": "2.0-dual",
     "updated": "2026-11-25",
     "axes": [
       {
@@ -52,7 +52,101 @@
         "note": "对规则的态度：越负越配合，越正越拧着来"
       }
     ],
-    "disclaimer": "所有坐标都是编辑部的主观打分，不是这些说法的「官方定义」。同一个人可能同时站在好几个点上。"
+    "disclaimer": "所有坐标都是编辑部的主观打分，不是这些说法的「官方定义」。同一个人可能同时站在好几个点上。",
+    "modes": {
+      "life": {
+        "name": "生活模式",
+        "count": 30,
+        "axes": [
+          {
+            "key": "mood",
+            "neg": "消极",
+            "pos": "积极"
+          },
+          {
+            "key": "effort",
+            "neg": "放松",
+            "pos": "用力"
+          },
+          {
+            "key": "focus",
+            "neg": "向内",
+            "pos": "向外"
+          },
+          {
+            "key": "reality",
+            "neg": "现实",
+            "pos": "玄学"
+          },
+          {
+            "key": "social",
+            "neg": "独处",
+            "pos": "群居"
+          },
+          {
+            "key": "money",
+            "neg": "省",
+            "pos": "花"
+          },
+          {
+            "key": "horizon",
+            "neg": "当下",
+            "pos": "长期"
+          },
+          {
+            "key": "stance",
+            "neg": "顺从",
+            "pos": "反抗"
+          }
+        ]
+      },
+      "philosophy": {
+        "name": "哲学模式",
+        "count": 20,
+        "axes": [
+          {
+            "key": "situation",
+            "neg": "消极",
+            "pos": "积极"
+          },
+          {
+            "key": "theory",
+            "neg": "思辨",
+            "pos": "实用"
+          },
+          {
+            "key": "locus",
+            "neg": "集体",
+            "pos": "个体"
+          },
+          {
+            "key": "source",
+            "neg": "体验",
+            "pos": "理性"
+          },
+          {
+            "key": "stance",
+            "neg": "顺从",
+            "pos": "反抗"
+          },
+          {
+            "key": "plurality",
+            "neg": "一元",
+            "pos": "多元"
+          },
+          {
+            "key": "dimension",
+            "neg": "世俗",
+            "pos": "超越"
+          },
+          {
+            "key": "aim",
+            "neg": "描述",
+            "pos": "规范"
+          }
+        ]
+      }
+    }
   },
   "isms": [
     {
@@ -84,6 +178,24 @@
         "「都是编的」"
       ],
       "coords": {
+        "situation": -0.9,
+        "theory": -0.5,
+        "locus": 0.0,
+        "source": -0.2,
+        "stance": 0.3,
+        "plurality": 0.4,
+        "dimension": -0.8,
+        "aim": -0.4
+      },
+      "axes": {
+        "x": -0.9,
+        "y": -0.5,
+        "z": -0.2
+      },
+      "axesConfidence": "editorial",
+      "sources": [],
+      "mode": "philosophy",
+      "coordsLife": {
         "mood": -0.9,
         "effort": -0.5,
         "focus": -0.2,
@@ -92,14 +204,7 @@
         "money": -0.5,
         "horizon": -0.6,
         "stance": 0.3
-      },
-      "axes": {
-        "x": -0.9,
-        "y": -0.5,
-        "z": -0.2
-      },
-      "axesConfidence": "editorial",
-      "sources": []
+      }
     },
     {
       "id": "stoicism",
@@ -130,6 +235,24 @@
         "「情绪是暂时的」"
       ],
       "coords": {
+        "situation": 0.2,
+        "theory": 0.8,
+        "locus": 0.6,
+        "source": 0.6,
+        "stance": 0.1,
+        "plurality": -0.3,
+        "dimension": 0.4,
+        "aim": 0.5
+      },
+      "axes": {
+        "x": 0.2,
+        "y": 0.8,
+        "z": -0.6
+      },
+      "axesConfidence": "editorial",
+      "sources": [],
+      "mode": "philosophy",
+      "coordsLife": {
         "mood": 0.2,
         "effort": 0.8,
         "focus": -0.6,
@@ -138,14 +261,7 @@
         "money": -0.8,
         "horizon": 0.5,
         "stance": 0.1
-      },
-      "axes": {
-        "x": 0.2,
-        "y": 0.8,
-        "z": -0.6
-      },
-      "axesConfidence": "editorial",
-      "sources": []
+      }
     },
     {
       "id": "hedonism",
@@ -176,6 +292,24 @@
         "「先享受再说」"
       ],
       "coords": {
+        "situation": 0.4,
+        "theory": 0.5,
+        "locus": 0.4,
+        "source": 0.1,
+        "stance": 0.0,
+        "plurality": 0.0,
+        "dimension": -0.8,
+        "aim": 0.6
+      },
+      "axes": {
+        "x": 0.5,
+        "y": 0.3,
+        "z": 0.4
+      },
+      "axesConfidence": "editorial",
+      "sources": [],
+      "mode": "philosophy",
+      "coordsLife": {
         "mood": 0.5,
         "effort": 0.3,
         "focus": 0.4,
@@ -184,14 +318,7 @@
         "money": 0.7,
         "horizon": -0.7,
         "stance": 0.1
-      },
-      "axes": {
-        "x": 0.5,
-        "y": 0.3,
-        "z": 0.4
-      },
-      "axesConfidence": "editorial",
-      "sources": []
+      }
     },
     {
       "id": "existentialism",
@@ -222,6 +349,24 @@
         "「先做了再说」"
       ],
       "coords": {
+        "situation": 0.0,
+        "theory": 0.2,
+        "locus": 0.6,
+        "source": -0.2,
+        "stance": 0.6,
+        "plurality": 0.5,
+        "dimension": -0.2,
+        "aim": 0.3
+      },
+      "axes": {
+        "x": 0.1,
+        "y": 0.6,
+        "z": -0.3
+      },
+      "axesConfidence": "editorial",
+      "sources": [],
+      "mode": "philosophy",
+      "coordsLife": {
         "mood": 0.1,
         "effort": 0.6,
         "focus": -0.3,
@@ -230,14 +375,7 @@
         "money": -0.2,
         "horizon": 0.2,
         "stance": 0.6
-      },
-      "axes": {
-        "x": 0.1,
-        "y": 0.6,
-        "z": -0.3
-      },
-      "axesConfidence": "editorial",
-      "sources": []
+      }
     },
     {
       "id": "pragmatism",
@@ -268,6 +406,24 @@
         "「别吵了，看结果」"
       ],
       "coords": {
+        "situation": 0.5,
+        "theory": 0.9,
+        "locus": -0.4,
+        "source": 0.3,
+        "stance": -0.1,
+        "plurality": 0.6,
+        "dimension": -0.7,
+        "aim": 0.2
+      },
+      "axes": {
+        "x": 0.5,
+        "y": 0.8,
+        "z": 0.6
+      },
+      "axesConfidence": "editorial",
+      "sources": [],
+      "mode": "philosophy",
+      "coordsLife": {
         "mood": 0.5,
         "effort": 0.8,
         "focus": 0.6,
@@ -276,14 +432,7 @@
         "money": 0.1,
         "horizon": 0.5,
         "stance": 0.0
-      },
-      "axes": {
-        "x": 0.5,
-        "y": 0.8,
-        "z": 0.6
-      },
-      "axesConfidence": "editorial",
-      "sources": []
+      }
     },
     {
       "id": "skepticism",
@@ -314,6 +463,24 @@
         "「先别急着下结论」"
       ],
       "coords": {
+        "situation": -0.2,
+        "theory": -0.7,
+        "locus": -0.1,
+        "source": -0.1,
+        "stance": 0.2,
+        "plurality": 0.9,
+        "dimension": -0.4,
+        "aim": -0.6
+      },
+      "axes": {
+        "x": -0.2,
+        "y": -0.3,
+        "z": -0.2
+      },
+      "axesConfidence": "editorial",
+      "sources": [],
+      "mode": "philosophy",
+      "coordsLife": {
         "mood": -0.2,
         "effort": -0.3,
         "focus": -0.2,
@@ -322,14 +489,7 @@
         "money": -0.3,
         "horizon": 0.0,
         "stance": 0.4
-      },
-      "axes": {
-        "x": -0.2,
-        "y": -0.3,
-        "z": -0.2
-      },
-      "axesConfidence": "editorial",
-      "sources": []
+      }
     },
     {
       "id": "cynicism",
@@ -360,6 +520,24 @@
         "「随你们怎么说」"
       ],
       "coords": {
+        "situation": -0.3,
+        "theory": 0.6,
+        "locus": 0.9,
+        "source": -0.4,
+        "stance": 0.8,
+        "plurality": 0.3,
+        "dimension": -0.3,
+        "aim": 0.4
+      },
+      "axes": {
+        "x": -0.2,
+        "y": 0.5,
+        "z": -0.7
+      },
+      "axesConfidence": "editorial",
+      "sources": [],
+      "mode": "philosophy",
+      "coordsLife": {
         "mood": -0.2,
         "effort": 0.5,
         "focus": -0.7,
@@ -368,14 +546,7 @@
         "money": -0.95,
         "horizon": 0.0,
         "stance": 0.9
-      },
-      "axes": {
-        "x": -0.2,
-        "y": 0.5,
-        "z": -0.7
-      },
-      "axesConfidence": "editorial",
-      "sources": []
+      }
     },
     {
       "id": "pessimism",
@@ -406,6 +577,24 @@
         "「最坏也就这样了」"
       ],
       "coords": {
+        "situation": -0.9,
+        "theory": -0.5,
+        "locus": 0.3,
+        "source": -0.3,
+        "stance": -0.2,
+        "plurality": -0.1,
+        "dimension": 0.3,
+        "aim": -0.4
+      },
+      "axes": {
+        "x": -0.95,
+        "y": -0.3,
+        "z": -0.4
+      },
+      "axesConfidence": "editorial",
+      "sources": [],
+      "mode": "philosophy",
+      "coordsLife": {
         "mood": -0.95,
         "effort": -0.3,
         "focus": -0.4,
@@ -414,14 +603,7 @@
         "money": -0.4,
         "horizon": -0.3,
         "stance": -0.2
-      },
-      "axes": {
-        "x": -0.95,
-        "y": -0.3,
-        "z": -0.4
-      },
-      "axesConfidence": "editorial",
-      "sources": []
+      }
     },
     {
       "id": "absurdism",
@@ -452,6 +634,24 @@
         "「推石头就推石头」"
       ],
       "coords": {
+        "situation": -0.1,
+        "theory": -0.4,
+        "locus": 0.5,
+        "source": -0.3,
+        "stance": 0.7,
+        "plurality": 0.4,
+        "dimension": -0.3,
+        "aim": 0.2
+      },
+      "axes": {
+        "x": -0.1,
+        "y": 0.6,
+        "z": -0.2
+      },
+      "axesConfidence": "editorial",
+      "sources": [],
+      "mode": "philosophy",
+      "coordsLife": {
         "mood": -0.1,
         "effort": 0.6,
         "focus": -0.2,
@@ -460,14 +660,7 @@
         "money": -0.2,
         "horizon": -0.1,
         "stance": 0.8
-      },
-      "axes": {
-        "x": -0.1,
-        "y": 0.6,
-        "z": -0.2
-      },
-      "axesConfidence": "editorial",
-      "sources": []
+      }
     },
     {
       "id": "altruism",
@@ -498,6 +691,24 @@
         "「先帮了再说」"
       ],
       "coords": {
+        "situation": 0.6,
+        "theory": 0.2,
+        "locus": -0.7,
+        "source": -0.2,
+        "stance": 0.2,
+        "plurality": 0.1,
+        "dimension": 0.1,
+        "aim": 0.7
+      },
+      "axes": {
+        "x": 0.6,
+        "y": 0.6,
+        "z": 0.8
+      },
+      "axesConfidence": "editorial",
+      "sources": [],
+      "mode": "philosophy",
+      "coordsLife": {
         "mood": 0.6,
         "effort": 0.6,
         "focus": 0.8,
@@ -506,14 +717,7 @@
         "money": -0.4,
         "horizon": 0.5,
         "stance": 0.1
-      },
-      "axes": {
-        "x": 0.6,
-        "y": 0.6,
-        "z": 0.8
-      },
-      "axesConfidence": "editorial",
-      "sources": []
+      }
     },
     {
       "id": "egoism",
@@ -544,6 +748,24 @@
         "「我凭什么」"
       ],
       "coords": {
+        "situation": -0.3,
+        "theory": 0.6,
+        "locus": 0.9,
+        "source": 0.3,
+        "stance": 0.1,
+        "plurality": 0.2,
+        "dimension": -0.7,
+        "aim": 0.5
+      },
+      "axes": {
+        "x": 0.1,
+        "y": 0.7,
+        "z": 0.6
+      },
+      "axesConfidence": "editorial",
+      "sources": [],
+      "mode": "philosophy",
+      "coordsLife": {
         "mood": 0.1,
         "effort": 0.7,
         "focus": 0.6,
@@ -552,14 +774,7 @@
         "money": 0.5,
         "horizon": 0.3,
         "stance": 0.2
-      },
-      "axes": {
-        "x": 0.1,
-        "y": 0.7,
-        "z": 0.6
-      },
-      "axesConfidence": "editorial",
-      "sources": []
+      }
     },
     {
       "id": "romanticism",
@@ -590,6 +805,24 @@
         "「不管了，先去了」"
       ],
       "coords": {
+        "situation": 0.5,
+        "theory": -0.9,
+        "locus": 0.6,
+        "source": -0.7,
+        "stance": 0.4,
+        "plurality": 0.6,
+        "dimension": 0.8,
+        "aim": 0.3
+      },
+      "axes": {
+        "x": 0.6,
+        "y": 0.4,
+        "z": -0.5
+      },
+      "axesConfidence": "editorial",
+      "sources": [],
+      "mode": "philosophy",
+      "coordsLife": {
         "mood": 0.6,
         "effort": 0.4,
         "focus": -0.5,
@@ -598,14 +831,7 @@
         "money": -0.5,
         "horizon": 0.1,
         "stance": 0.5
-      },
-      "axes": {
-        "x": 0.6,
-        "y": 0.4,
-        "z": -0.5
-      },
-      "axesConfidence": "editorial",
-      "sources": []
+      }
     },
     {
       "id": "lying-flat",
@@ -651,7 +877,8 @@
         "z": -0.6
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "involution",
@@ -697,7 +924,8 @@
         "z": 0.8
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "striving",
@@ -743,7 +971,8 @@
         "z": 0.7
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "buddha-like",
@@ -789,7 +1018,8 @@
         "z": -0.4
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "slacking",
@@ -835,7 +1065,8 @@
         "z": -0.3
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "let-it-rot",
@@ -881,7 +1112,8 @@
         "z": -0.5
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "slash",
@@ -927,7 +1159,8 @@
         "z": 0.5
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "long-termism",
@@ -973,7 +1206,8 @@
         "z": 0.2
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "consumerism",
@@ -1019,7 +1253,8 @@
         "z": 0.6
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "minimalism",
@@ -1065,7 +1300,8 @@
         "z": -0.5
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "decluttering",
@@ -1111,7 +1347,8 @@
         "z": -0.6
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "refined-poor",
@@ -1157,7 +1394,8 @@
         "z": 0.7
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "self-pleasing",
@@ -1203,7 +1441,8 @@
         "z": -0.7
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "hoarding",
@@ -1249,7 +1488,8 @@
         "z": 0.1
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "sang",
@@ -1295,7 +1535,8 @@
         "z": -0.5
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "fun-seeker",
@@ -1341,7 +1582,8 @@
         "z": 0.6
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "crashing-out",
@@ -1387,7 +1629,8 @@
         "z": 0.5
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "relaxed",
@@ -1433,7 +1676,8 @@
         "z": -0.4
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "anxiety",
@@ -1479,7 +1723,8 @@
         "z": 0.4
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "thick-skin",
@@ -1525,7 +1770,8 @@
         "z": -0.8
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "self-consistent",
@@ -1571,7 +1817,8 @@
         "z": -0.9
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "social-anxiety",
@@ -1617,7 +1864,8 @@
         "z": -0.9
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "social-butterfly",
@@ -1663,7 +1911,8 @@
         "z": 0.9
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "cutting-ties",
@@ -1709,7 +1958,8 @@
         "z": -0.6
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "activity-partner",
@@ -1755,7 +2005,8 @@
         "z": 0.3
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "solo-living",
@@ -1801,7 +2052,8 @@
         "z": -0.8
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "boundaries",
@@ -1847,7 +2099,8 @@
         "z": -0.5
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "metaphysics",
@@ -1893,7 +2146,8 @@
         "z": 0.1
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "wellness",
@@ -1939,7 +2193,8 @@
         "z": -0.6
       },
       "axesConfidence": "editorial",
-      "sources": []
+      "sources": [],
+      "mode": "life"
     },
     {
       "id": "cyber-wish",
@@ -1983,6 +2238,359 @@
         "x": 0.3,
         "y": -0.6,
         "z": 0.2
+      },
+      "axesConfidence": "editorial",
+      "sources": [],
+      "mode": "life"
+    },
+    {
+      "id": "idealism",
+      "name": "观念论",
+      "nameEn": "Idealism",
+      "oneLine": "你看到的世界，一半是你自己添上去的。",
+      "definition": "认为实在离不开心灵。极端版本说\"存在就是被感知\"，温和版本说我们认识的永远是被加工过的现象，而不是事物本身。它不否认外面有东西，只否认我们能直接碰到\"未经加工\"的那个东西。",
+      "when": "争论\"这是客观事实，还是你的看法\"的时候。",
+      "tenets": [
+        "心灵或精神是实在的基础",
+        "我们认识的一切都被框架加工过",
+        "知识与对象之间必须\"同构\"，否则认识不可能"
+      ],
+      "strengths": [
+        "能解释同一件事为什么不同人看到不同的东西",
+        "为意义、价值、审美保留位置，不被还原成物质"
+      ],
+      "limits": [
+        "违反常识：桌子就在那儿，不因为你不看就消失",
+        "容易滑向\"一切都是我想的\"，说不清公共性"
+      ],
+      "figures": [
+        "「存在即被感知」",
+        "「你怎么知道那是本来面目」",
+        "「现实是被建构的」"
+      ],
+      "mode": "philosophy",
+      "coords": {
+        "situation": 0.3,
+        "theory": -0.8,
+        "locus": -0.5,
+        "source": 0.5,
+        "stance": -0.2,
+        "plurality": -0.2,
+        "dimension": 0.7,
+        "aim": 0.1
+      },
+      "axes": {
+        "x": 0.3,
+        "y": -0.8,
+        "z": -0.5
+      },
+      "axesConfidence": "editorial",
+      "sources": []
+    },
+    {
+      "id": "physicalism",
+      "name": "物理主义",
+      "nameEn": "Physicalism",
+      "oneLine": "说到底，都是物质在动。",
+      "definition": "一切现象最终都由物理事实决定。情绪、想法、社会关系，都能落到大脑与物质过程上。它不要求你把\"爱\"翻译成激素，只主张：物质层面完全一样，其他层面也就一样。",
+      "when": "别人说\"这不科学\"，或者你想给一个现象找硬解释的时候。",
+      "tenets": [
+        "物理事实决定一切事实",
+        "心理可以随附于、实现于物理，但不必被还原",
+        "说不清\"物理\"指什么，这理论就不完整"
+      ],
+      "strengths": [
+        "与科学一致，能解释药物、睡眠、运动为什么影响心情",
+        "排除玄学解释，逼着人去找可验证的原因"
+      ],
+      "limits": [
+        "说不清\"疼是什么感觉\"为什么不是物理知识",
+        "把爱说成激素，总觉得少了点什么"
+      ],
+      "figures": [
+        "「有数据吗」",
+        "「这是生理反应」",
+        "「大脑决定的」"
+      ],
+      "mode": "philosophy",
+      "coords": {
+        "situation": -0.1,
+        "theory": 0.7,
+        "locus": -0.3,
+        "source": 0.8,
+        "stance": -0.3,
+        "plurality": -0.4,
+        "dimension": -0.9,
+        "aim": -0.2
+      },
+      "axes": {
+        "x": -0.1,
+        "y": 0.7,
+        "z": -0.3
+      },
+      "axesConfidence": "editorial",
+      "sources": []
+    },
+    {
+      "id": "relativism",
+      "name": "相对主义",
+      "nameEn": "Relativism",
+      "oneLine": "对错要看在谁的框架里说。",
+      "definition": "真、善、合理都相对于某个文化、时代或视角才成立，没有一个超然的中立标准来裁决。多数人是局部相对主义：只在道德或审美上这样想，数学上不。",
+      "when": "跨文化冲突、家庭观念冲突、不知道该不该评价别人的时候。",
+      "tenets": [
+        "真与善随框架而变",
+        "「P 为真」其实是「P 相对于 C 为真」",
+        "不存在能站到所有框架之外的裁判"
+      ],
+      "strengths": [
+        "不那么容易 judge 别人",
+        "能理解差异，减少无谓的优越感"
+      ],
+      "limits": [
+        "滑到底就是\"什么都可以\"，连明显的恶也不能批评",
+        "「一切皆相对」这句话本身怎么算"
+      ],
+      "figures": [
+        "「各有各的活法」",
+        "「你不懂他们的文化」",
+        "「没有标准答案」"
+      ],
+      "mode": "philosophy",
+      "coords": {
+        "situation": -0.4,
+        "theory": -0.2,
+        "locus": -0.4,
+        "source": -0.3,
+        "stance": 0.3,
+        "plurality": 0.9,
+        "dimension": -0.5,
+        "aim": -0.3
+      },
+      "axes": {
+        "x": -0.4,
+        "y": -0.2,
+        "z": -0.4
+      },
+      "axesConfidence": "editorial",
+      "sources": []
+    },
+    {
+      "id": "mysticism",
+      "name": "神秘主义",
+      "nameEn": "Mysticism",
+      "oneLine": "有些东西只能体验，说不出来。",
+      "definition": "主张存在一种超越感官和语言的体验，能直接接触到更深的实在。重点不是奇异的经历，而是长期修行之后的转变——人变了，看世界的方式也变了。",
+      "when": "冥想、宗教体验、或者觉得语言怎么都不够用的时候。",
+      "tenets": [
+        "存在超越语言的直接体验",
+        "各传统的神秘体验共享一个核心",
+        "这类体验自带认知，不只是情绪"
+      ],
+      "strengths": [
+        "为难以言说的感受留了位置",
+        "能解释为什么有人被一次体验彻底改变"
+      ],
+      "limits": [
+        "无法验证，谁都可以这么说",
+        "各传统的说法互相矛盾，到底谁对"
+      ],
+      "figures": [
+        "「说不出来」",
+        "「只能自己体会」",
+        "「语言到此为止」"
+      ],
+      "mode": "philosophy",
+      "coords": {
+        "situation": 0.5,
+        "theory": -0.9,
+        "locus": 0.5,
+        "source": -0.9,
+        "stance": 0.2,
+        "plurality": 0.3,
+        "dimension": 0.95,
+        "aim": -0.1
+      },
+      "axes": {
+        "x": 0.5,
+        "y": -0.9,
+        "z": 0.5
+      },
+      "axesConfidence": "editorial",
+      "sources": []
+    },
+    {
+      "id": "cosmopolitanism",
+      "name": "世界主义",
+      "nameEn": "Cosmopolitanism",
+      "oneLine": "人不分国界，都一样重要。",
+      "definition": "认为所有人同属一个共同体，远方陌生人和隔壁邻居同等重要。对本国、本地、本文化的偏爱不是不能有，但需要给出理由。",
+      "when": "看到远方的灾难、思考移民与全球化、被问\"为什么帮远处不帮身边\"的时候。",
+      "tenets": [
+        "国界不构成道德界线",
+        "以人类为单位反思对同胞的特殊义务",
+        "通过全球正义、人权与国际制度落实"
+      ],
+      "strengths": [
+        "为援助远方、反对排外提供依据",
+        "理论弹性大，不等于要世界政府"
+      ],
+      "limits": [
+        "容易忽视身边的具体责任",
+        "难以落地，谁来做、按什么规则做"
+      ],
+      "figures": [
+        "「都是人」",
+        "「不分国家」",
+        "「远方的命也是命」"
+      ],
+      "mode": "philosophy",
+      "coords": {
+        "situation": 0.3,
+        "theory": 0.3,
+        "locus": -0.9,
+        "source": 0.2,
+        "stance": 0.1,
+        "plurality": 0.3,
+        "dimension": -0.2,
+        "aim": 0.7
+      },
+      "axes": {
+        "x": 0.3,
+        "y": 0.3,
+        "z": -0.9
+      },
+      "axesConfidence": "editorial",
+      "sources": []
+    },
+    {
+      "id": "rationalism",
+      "name": "理性主义",
+      "nameEn": "Rationalism",
+      "oneLine": "有些事，想明白就行，不用试。",
+      "definition": "认为理性可以独立于经验获得知识：数学的必然、逻辑的关系、某些价值判断，不需要靠一次次实验来确认。经验只是触发器，不是来源。",
+      "when": "做纯推理、写代码、或者在争论\"这用试吗\"的时候。",
+      "tenets": [
+        "存在不依赖经验的知识",
+        "直觉与演绎能通达必然真理",
+        "理性在可靠性上高于感觉"
+      ],
+      "strengths": [
+        "能解释数学与逻辑为什么必然",
+        "推理链条长，不容易被个案带偏"
+      ],
+      "limits": [
+        "说不清\"直觉\"到底是什么，凭什么可信",
+        "容易过度自信，忽略现实反例"
+      ],
+      "figures": [
+        "「推一下就知道了」",
+        "「逻辑上不成立」",
+        "「这不用试」"
+      ],
+      "mode": "philosophy",
+      "coords": {
+        "situation": 0.3,
+        "theory": -0.6,
+        "locus": 0.2,
+        "source": 0.9,
+        "stance": -0.1,
+        "plurality": -0.4,
+        "dimension": 0.3,
+        "aim": 0.0
+      },
+      "axes": {
+        "x": 0.3,
+        "y": -0.6,
+        "z": 0.2
+      },
+      "axesConfidence": "editorial",
+      "sources": []
+    },
+    {
+      "id": "empiricism",
+      "name": "经验主义",
+      "nameEn": "Empiricism",
+      "oneLine": "没见过的，先别下结论。",
+      "definition": "认为一切知识来自经验，理性单独不产生关于世界的新知识。逻辑和数学只管形式对不对，不管世界是什么样。",
+      "when": "看数据、做实验、被要求\"拿证据\"的时候。",
+      "tenets": [
+        "经验是知识与概念的唯一来源",
+        "逻辑只处理观念之间的关系",
+        "没有天生的观念，都是一点点攒的"
+      ],
+      "strengths": [
+        "不容易被空话和大词骗",
+        "尊重证据，可被反驳"
+      ],
+      "limits": [
+        "解释不了\"必然\"从哪来",
+        "「没见过」不等于「不存在」"
+      ],
+      "figures": [
+        "「有证据吗」",
+        "「先看数据」",
+        "「样本多大」"
+      ],
+      "mode": "philosophy",
+      "coords": {
+        "situation": 0.0,
+        "theory": 0.8,
+        "locus": 0.1,
+        "source": -0.8,
+        "stance": -0.1,
+        "plurality": 0.3,
+        "dimension": -0.6,
+        "aim": -0.1
+      },
+      "axes": {
+        "x": 0.0,
+        "y": 0.8,
+        "z": 0.1
+      },
+      "axesConfidence": "editorial",
+      "sources": []
+    },
+    {
+      "id": "utilitarianism",
+      "name": "功利主义",
+      "nameEn": "Utilitarianism",
+      "oneLine": "看结果，哪个让更多人好就选哪个。",
+      "definition": "行为的对错只看后果，正当的行为是让所有相关者的总福利最大。动机好不好、承诺守没守，只有影响到结果时才重要。",
+      "when": "做资源分配、算性价比、决定先帮谁的时候。",
+      "tenets": [
+        "后果决定对错",
+        "每个人的利益同等计算",
+        "追求总量最大，而不是让最多人满意"
+      ],
+      "strengths": [
+        "标准明确，能比较、能算",
+        "可操作，不用纠结动机纯不纯"
+      ],
+      "limits": [
+        "可能为了多数牺牲少数",
+        "要求太高，人算不过来，也做不到"
+      ],
+      "figures": [
+        "「算总账」",
+        "「哪个收益大」",
+        "「少数服从多数」"
+      ],
+      "mode": "philosophy",
+      "coords": {
+        "situation": 0.4,
+        "theory": 0.9,
+        "locus": -0.8,
+        "source": 0.6,
+        "stance": 0.0,
+        "plurality": -0.2,
+        "dimension": -0.8,
+        "aim": 0.8
+      },
+      "axes": {
+        "x": 0.4,
+        "y": 0.9,
+        "z": -0.8
       },
       "axesConfidence": "editorial",
       "sources": []

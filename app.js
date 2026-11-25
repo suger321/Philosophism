@@ -4,7 +4,7 @@
   const SPAN = 8;
   const isTouch = (window.matchMedia && matchMedia('(pointer: coarse)').matches) || innerWidth < 820;
 
-  const AXIS = {
+  const AXIS_LIFE = {
     mood: { neg: '消极', pos: '积极', color: 0xff7b7b },
     effort: { neg: '放松', pos: '用力', color: 0x7ce38b },
     focus: { neg: '向内', pos: '向外', color: 0x7fb2ff },
@@ -15,12 +15,34 @@
     stance: { neg: '顺从', pos: '反抗', color: 0xff8bc7 }
   };
 
-  const FRAMES = [
-    { id: 'work', name: '怎么过工作日', axes: ['effort', 'mood', 'focus'] },
-    { id: 'money', name: '怎么花钱', axes: ['money', 'horizon', 'mood'] },
-    { id: 'social', name: '怎么处关系', axes: ['social', 'focus', 'stance'] },
-    { id: 'mood', name: '怎么消化情绪', axes: ['mood', 'reality', 'effort'] }
+  const AXIS_PHILO = {
+    situation: { neg: '消极', pos: '积极', color: 0xff7b7b },
+    theory: { neg: '思辨', pos: '实用', color: 0x7ce38b },
+    locus: { neg: '集体', pos: '个体', color: 0x7fb2ff },
+    source: { neg: '体验', pos: '理性', color: 0xffb86b },
+    stance: { neg: '顺从', pos: '反抗', color: 0xd08bff },
+    plurality: { neg: '一元', pos: '多元', color: 0x6ee7ff },
+    dimension: { neg: '世俗', pos: '超越', color: 0xf5e56b },
+    aim: { neg: '描述', pos: '规范', color: 0xff8bc7 }
+  };
+
+  const FRAMES_LIFE = [
+    { id: 'life-mood', name: '生活观', axes: ['mood', 'effort', 'horizon'] },
+    { id: 'value', name: '价值观', axes: ['money', 'stance', 'reality'] },
+    { id: 'emotion', name: '情感观', axes: ['social', 'focus', 'stance'] },
+    { id: 'state', name: '状态观', axes: ['mood', 'reality', 'effort'] }
   ];
+
+  const FRAMES_PHILO = [
+    { id: 'epistemology', name: '认识论', axes: ['source', 'plurality', 'dimension'] },
+    { id: 'ontology', name: '存在论', axes: ['situation', 'theory', 'dimension'] },
+    { id: 'ethics', name: '伦理观', axes: ['locus', 'stance', 'aim'] },
+    { id: 'practice', name: '实践观', axes: ['theory', 'stance', 'situation'] }
+  ];
+
+  let curMode = 'life';
+  const axDef = () => (curMode === 'life' ? AXIS_LIFE : AXIS_PHILO);
+  const frameList = () => (curMode === 'life' ? FRAMES_LIFE : FRAMES_PHILO);
 
   const CUSTOM_KEY = 'ism_atlas_custom_v1';
 
@@ -32,7 +54,7 @@
     if (raw) JSON.parse(raw).forEach(x => isms.push(x));
   } catch (e) { /* 忽略损坏的本地数据 */ }
 
-  let frame = FRAMES[0];
+  let frame = FRAMES_LIFE[0];
   let mode = 'analyze'; // analyze | roam
   let selected = null;
 
@@ -101,7 +123,7 @@
       if (o.geometry) o.geometry.dispose();
       if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); }
     }
-    const cols = [AXIS[frame.axes[0]].color, AXIS[frame.axes[1]].color, AXIS[frame.axes[2]].color];
+    const cols = [axDef()[frame.axes[0]].color, axDef()[frame.axes[1]].color, axDef()[frame.axes[2]].color];
     for (let i = 0; i < 3; i++) {
       const g = new THREE.BufferGeometry().setFromPoints([
         new THREE.Vector3(0, 0, 0),
@@ -124,11 +146,11 @@
         : i === 1 ? new THREE.Vector3(0, ext, 0)
           : new THREE.Vector3(0, 0, ext);
       const minus = plus.clone().multiplyScalar(-1);
-      const s1 = makeLabelSprite(AXIS[key].pos, hex(AXIS[key].color));
+      const s1 = makeLabelSprite(axDef()[key].pos, hex(axDef()[key].color));
       s1.position.copy(plus);
       s1.material.depthTest = false; s1.renderOrder = 999;
       axisGroup.add(s1);
-      const s2 = makeLabelSprite(AXIS[key].neg, hex(AXIS[key].color));
+      const s2 = makeLabelSprite(axDef()[key].neg, hex(axDef()[key].color));
       s2.position.copy(minus);
       s2.material.depthTest = false; s2.renderOrder = 999;
       axisGroup.add(s2);
@@ -198,6 +220,7 @@
       const mat = new THREE.MeshBasicMaterial({ color: colorFor((ism.coords || {})[frame.axes[0]] || 0) });
       const mesh = new THREE.Mesh(geo, mat);
       mesh.position.copy(posOf(ism, frame));
+      mesh.visible = (ism.mode || 'life') === curMode;
       mesh.userData.ism = ism;
       mesh.userData.target = mesh.position.clone();
       const lab = makeLabelSprite(ism.name, 'rgba(203,220,240,0.86)', 22, 0.0115);
@@ -339,7 +362,7 @@
     ndc.x = ((cx - r.left) / r.width) * 2 - 1;
     ndc.y = -((cy - r.top) / r.height) * 2 + 1;
     ray.setFromCamera(ndc, camera);
-    const hit = ray.intersectObjects(nodes.concat(origin), false)[0];
+    const hit = ray.intersectObjects(nodes.filter(n => n.visible).concat(origin), false)[0];
     if (!hit) {
       if (panel.classList.contains('open')) closePanel();
       return;
@@ -357,7 +380,7 @@
     ndc.x = ((mouseX - r.left) / r.width) * 2 - 1;
     ndc.y = -((mouseY - r.top) / r.height) * 2 + 1;
     ray.setFromCamera(ndc, camera);
-    const hit = ray.intersectObjects(nodes.concat(origin), false)[0];
+    const hit = ray.intersectObjects(nodes.filter(n => n.visible).concat(origin), false)[0];
     if (hit && hit.object.userData.isOrigin) {
       hovered = null;
       tip.textContent = '原点 · 点一下回到全景';
@@ -407,11 +430,12 @@
     }
     // 八轴
     const c = ism.coords || {};
-    const bars = Object.keys(AXIS).map(k => {
+    const axisSet = axDef();
+    const bars = Object.keys(axisSet).map(k => {
       const v = c[k] || 0;
       const pct = Math.min(50, Math.abs(v) * 50);
       const left = v >= 0 ? 50 : 50 - pct;
-      return `<div class="bar"><span>${AXIS[k].neg}</span><div class="track"><i class="mid"></i><i class="fill" style="left:${left}%;width:${pct}%"></i></div><span style="text-align:right">${AXIS[k].pos}</span></div>`;
+      return `<div class="bar"><span>${axisSet[k].neg}</span><div class="track"><i class="mid"></i><i class="fill" style="left:${left}%;width:${pct}%"></i></div><span style="text-align:right">${axisSet[k].pos}</span></div>`;
     }).join('');
     parts.push(`<h5>在八条轴上的位置</h5><div class="bars">${bars}</div>`);
     // 来源
@@ -450,14 +474,18 @@
 
   /* ---------- 顶部与图例 ---------- */
   const framesEl = document.getElementById('frames');
-  FRAMES.forEach(f => {
-    const b = document.createElement('button');
-    b.className = 'fbtn' + (f.id === frame.id ? ' on' : '');
-    b.textContent = f.name;
-    b.dataset.id = f.id;
-    b.addEventListener('click', () => switchFrame(f));
-    framesEl.appendChild(b);
-  });
+  function buildFrameButtons() {
+    framesEl.innerHTML = '';
+    frameList().forEach(f => {
+      const b = document.createElement('button');
+      b.className = 'fbtn' + (f.id === frame.id ? ' on' : '');
+      b.textContent = f.name;
+      b.dataset.id = f.id;
+      b.addEventListener('click', () => switchFrame(f));
+      framesEl.appendChild(b);
+    });
+  }
+  buildFrameButtons();
 
   function switchFrame(f) {
     frame = f;
@@ -465,6 +493,7 @@
     rebuildAxes();
     renderLegend();
     nodes.forEach(n => {
+      if (!n.visible) return;
       n.userData.target = posOf(n.userData.ism, f);
       const v = (n.userData.ism.coords || {})[f.axes[0]] || 0;
       n.material.color.copy(colorFor(v));
@@ -475,9 +504,10 @@
   function renderLegend() {
     const el = document.getElementById('axes');
     el.innerHTML = frame.axes.map((k, i) => {
-      const hex = '#' + AXIS[k].color.toString(16).padStart(6, '0');
+      const a = axDef()[k];
+      const hex = '#' + a.color.toString(16).padStart(6, '0');
       return `<div class="axrow"><span class="axdot" style="background:${hex}"></span>
-        <span class="axend">${AXIS[k].neg}</span><span style="color:#4c5a70">——</span><span>${AXIS[k].pos}</span></div>`;
+        <span class="axend">${a.neg}</span><span style="color:#4c5a70">——</span><span>${a.pos}</span></div>`;
     }).join('');
     document.getElementById('hint').textContent =
       mode === 'analyze' ? '拖拽旋转 · 滚轮缩放 · 点击圆点看详情' : '点击画面后移动鼠标转头 · 滚轮前后 · Esc 退出';
@@ -514,19 +544,53 @@
     if (lbl) lbl.textContent = showLabels ? '隐藏名称' : '显示名称';
   });
 
+  /* ---------- 生活 / 哲学 两套模式 ---------- */
+  function switchMode(m) {
+    if (m === curMode) return;
+    curMode = m;
+    frame = frameList()[0];
+    buildFrameButtons();
+    nodes.forEach(n => {
+      const on = (n.userData.ism.mode || 'life') === m;
+      n.visible = on;
+      if (n.userData.label) n.userData.label.visible = false;
+      if (on) {
+        n.userData.target = posOf(n.userData.ism, frame);
+        n.material.color.copy(colorFor((n.userData.ism.coords || {})[frame.axes[0]] || 0));
+      }
+    });
+    rebuildAxes();
+    renderLegend();
+    closePanel();
+    resetView();
+    const mb = document.getElementById('btnMode2');
+    if (mb) mb.textContent = curMode === 'life' ? '哲学模式' : '生活模式';
+  }
+
+  const modeBtn = document.getElementById('btnMode2');
+  if (modeBtn) modeBtn.addEventListener('click', () => switchMode(curMode === 'life' ? 'philosophy' : 'life'));
+
   /* ---------- 添加主义 ---------- */
   const addEl = document.getElementById('add');
   const slidersEl = document.getElementById('aSliders');
-  Object.keys(AXIS).forEach(k => {
-    const row = document.createElement('div');
-    row.className = 'slider';
-    row.innerHTML = `<span>${AXIS[k].neg}</span>
-      <input type="range" min="-1" max="1" step="0.05" value="0" data-axis="${k}" />
-      <span style="text-align:right">${AXIS[k].pos}</span>`;
-    slidersEl.appendChild(row);
-  });
 
-  document.getElementById('btnAdd').addEventListener('click', () => addEl.classList.add('show'));
+  function buildSliders() {
+    slidersEl.innerHTML = '';
+    const axisSet = axDef();
+    Object.keys(axisSet).forEach(k => {
+      const row = document.createElement('div');
+      row.className = 'slider';
+      row.innerHTML = `<span>${axisSet[k].neg}</span>
+        <input type="range" min="-1" max="1" step="0.05" value="0" data-axis="${k}" />
+        <span style="text-align:right">${axisSet[k].pos}</span>`;
+      slidersEl.appendChild(row);
+    });
+  }
+
+  document.getElementById('btnAdd').addEventListener('click', () => {
+    buildSliders();
+    addEl.classList.add('show');
+  });
   document.getElementById('btnAddCancel').addEventListener('click', () => addEl.classList.remove('show'));
 
   document.getElementById('btnAddSave').addEventListener('click', () => {
@@ -542,6 +606,7 @@
       definition: document.getElementById('aDef').value.trim(),
       tenets: [], strengths: [], limits: [], figures: [],
       coords,
+      mode: curMode,
       sources: [],
       custom: true
     };
@@ -553,12 +618,18 @@
     } catch (e) { alert('本地保存失败，可能是浏览器禁用了存储'); }
 
     isms.push(item);
-    const mat = new THREE.MeshBasicMaterial({ color: colorFor(coords.situation || 0) });
+    const mat = new THREE.MeshBasicMaterial({ color: colorFor(coords[frame.axes[0]] || 0) });
     const mesh = new THREE.Mesh(geo, mat);
     mesh.position.copy(posOf(item, frame));
+    mesh.visible = true;
     mesh.userData.ism = item;
     mesh.userData.target = mesh.position.clone();
+    const lab = makeLabelSprite(item.name, 'rgba(203,220,240,0.86)', 22, 0.0115);
+    lab.position.copy(mesh.position).add(new THREE.Vector3(0, 0.78, 0));
+    lab.visible = false;
+    mesh.userData.label = lab;
     ptGroup.add(mesh);
+    ptGroup.add(lab);
     nodes.push(mesh);
 
     addEl.classList.remove('show');
