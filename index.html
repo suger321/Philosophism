@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>主义星图 · Ism Atlas</title>
+<style>
+  :root {
+    --bg0: #06070c;
+    --bg1: #0d1220;
+    --ink: #dbe4ef;
+    --dim: #7d8ba3;
+    --cy: #6ee7ff;
+    --gold: #ffd166;
+    --line: rgba(140, 170, 210, 0.18);
+    --glass: rgba(12, 18, 30, 0.72);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: radial-gradient(1200px 800px at 50% 35%, var(--bg1), var(--bg0) 70%);
+    color: var(--ink);
+    font: 14px/1.6 "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    overflow: hidden;
+  }
+  #scene { position: fixed; inset: 0; display: block; cursor: grab; }
+  #scene.dragging { cursor: grabbing; }
+  #scene.locked { cursor: none; }
+
+  /* 顶部 */
+  #topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 18px;
+    background: linear-gradient(180deg, rgba(6,7,12,.92), rgba(6,7,12,0));
+    pointer-events: none;
+  }
+  #topbar > * { pointer-events: auto; }
+  .brand { font-weight: 700; letter-spacing: .12em; font-size: 15px; margin-right: 6px; }
+  .brand small { display: block; font-weight: 400; letter-spacing: .18em; font-size: 10px; color: var(--dim); }
+  .frames { display: flex; gap: 6px; flex-wrap: wrap; }
+  .fbtn {
+    padding: 6px 12px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--line); background: rgba(255,255,255,.03);
+    color: var(--dim); font-size: 12.5px; transition: .18s;
+  }
+  .fbtn:hover { color: var(--ink); border-color: rgba(110,231,255,.4); }
+  .fbtn.on { color: #06121a; background: var(--cy); border-color: var(--cy); font-weight: 600; }
+  .spacer { flex: 1; }
+  .tool {
+    padding: 6px 11px; border-radius: 8px; cursor: pointer; font-size: 12.5px;
+    border: 1px solid var(--line); background: rgba(255,255,255,.03); color: var(--dim);
+  }
+  .tool:hover { color: var(--ink); border-color: rgba(110,231,255,.4); }
+  .tool.on { color: var(--cy); border-color: rgba(110,231,255,.55); }
+
+  /* 左下轴图例 */
+  #legend {
+    position: fixed; left: 18px; bottom: 18px; z-index: 15;
+    background: var(--glass); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px; backdrop-filter: blur(10px); max-width: 290px; font-size: 12px;
+  }
+  #legend h4 { margin: 0 0 8px; font-size: 11px; letter-spacing: .16em; color: var(--dim); font-weight: 600; }
+  .axrow { display: flex; align-items: center; gap: 8px; margin: 5px 0; }
+  .axdot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .axend { color: var(--dim); }
+  #hint { margin-top: 9px; padding-top: 8px; border-top: 1px solid var(--line); color: var(--dim); font-size: 11.5px; }
+
+  /* 右侧详情 */
+  #panel {
+    position: fixed; top: 0; right: 0; bottom: 0; width: min(400px, 92vw); z-index: 30;
+    background: rgba(8, 12, 20, .94); border-left: 1px solid var(--line);
+    backdrop-filter: blur(14px);
+    transform: translateX(102%); transition: transform .28s cubic-bezier(.22,.8,.2,1);
+    display: flex; flex-direction: column;
+  }
+  #panel.open { transform: none; }
+  #panel .hd { padding: 20px 22px 12px; border-bottom: 1px solid var(--line); }
+  #panel .hd .cn { font-size: 22px; font-weight: 700; }
+  #panel .hd .en { font-size: 12px; color: var(--dim); letter-spacing: .08em; margin-top: 2px; }
+  #panel .hd .one { margin-top: 10px; color: var(--gold); font-size: 13.5px; line-height: 1.65; }
+  #panel .bd { padding: 16px 22px 28px; overflow-y: auto; flex: 1; }
+  #panel .bd h5 {
+    margin: 18px 0 7px; font-size: 11px; letter-spacing: .16em; color: var(--dim); font-weight: 600;
+  }
+  #panel .bd h5:first-child { margin-top: 0; }
+  #panel ul { margin: 0; padding-left: 16px; }
+  #panel li { margin: 5px 0; font-size: 13px; line-height: 1.7; }
+  #panel p { margin: 0; font-size: 13.5px; line-height: 1.8; }
+  .close {
+    position: absolute; top: 14px; right: 16px; width: 28px; height: 28px; border-radius: 50%;
+    border: 1px solid var(--line); background: rgba(255,255,255,.04); color: var(--dim);
+    cursor: pointer; font-size: 15px; line-height: 1;
+  }
+  .close:hover { color: var(--ink); }
+  .good li::marker { color: #7ce38b; }
+  .bad li::marker { color: #ff8b8b; }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    padding: 3px 9px; border-radius: 999px; font-size: 11.5px;
+    background: rgba(110,231,255,.09); border: 1px solid rgba(110,231,255,.22); color: #a9e9ff;
+  }
+  .bars { margin-top: 4px; }
+  .bar { display: grid; grid-template-columns: 52px 1fr 52px; align-items: center; gap: 8px; margin: 6px 0; font-size: 11px; color: var(--dim); }
+  .bar .track { position: relative; height: 4px; background: rgba(255,255,255,.07); border-radius: 2px; }
+  .bar .mid { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: rgba(255,255,255,.14); }
+  .bar .fill { position: absolute; top: 1px; height: 2px; background: var(--cy); border-radius: 1px; }
+  .src { font-size: 11.5px; color: var(--dim); word-break: break-all; }
+  .src a { color: #8fd3ff; text-decoration: none; }
+  .src a:hover { text-decoration: underline; }
+
+  /* 悬停提示 */
+  #tip {
+    position: fixed; z-index: 25; pointer-events: none; padding: 4px 9px; border-radius: 6px;
+    background: rgba(8,12,20,.92); border: 1px solid var(--line); font-size: 12px;
+    transform: translate(-50%, -150%); opacity: 0; transition: opacity .12s; white-space: nowrap;
+  }
+
+  /* 首屏 */
+  #intro {
+    position: fixed; inset: 0; z-index: 60; display: none; place-items: center;
+    background: radial-gradient(900px 600px at 50% 45%, rgba(20,32,52,.96), rgba(4,6,11,.99));
+    padding: 24px;
+  }
+  body.intro-open #intro { display: grid; }
+  .card { max-width: 620px; text-align: center; }
+  .card .kicker { font-size: 11px; letter-spacing: .3em; color: var(--cy); margin-bottom: 14px; }
+  .card h1 { font-size: clamp(24px, 4vw, 34px); margin: 0 0 18px; letter-spacing: .04em; }
+  .card p { color: #b8c6d9; font-size: 14.5px; line-height: 2; margin: 0 0 14px; text-align: left; }
+  .card p.lead { color: var(--gold); font-size: 17px; text-align: center; margin-bottom: 20px; }
+  .enter {
+    margin-top: 10px; padding: 11px 30px; border-radius: 999px; cursor: pointer;
+    border: 1px solid rgba(110,231,255,.5); background: rgba(110,231,255,.1); color: var(--cy);
+    font-size: 14px; letter-spacing: .1em;
+  }
+  .enter:hover { background: var(--cy); color: #06121a; }
+  .fine { margin-top: 18px; font-size: 11px; color: #5d6b80; }
+
+  /* 底部引用 */
+  #credits {
+    position: fixed; right: 18px; bottom: 18px; z-index: 15; text-align: right;
+    font-size: 11px; color: #5d6b80; max-width: 330px;
+  }
+  #credits a { color: #7fa8cc; text-decoration: none; }
+  #credits a:hover { text-decoration: underline; }
+
+  /* 添加面板 */
+  #add {
+    position: fixed; inset: 0; z-index: 55; display: none; place-items: center;
+    background: rgba(4,6,11,.8); backdrop-filter: blur(6px); padding: 20px;
+  }
+  #add.show { display: grid; }
+  #add .box {
+    width: min(520px, 96vw); max-height: 88vh; overflow-y: auto;
+    background: rgba(10,16,26,.98); border: 1px solid var(--line); border-radius: 14px; padding: 22px;
+  }
+  #add h3 { margin: 0 0 4px; font-size: 17px; }
+  #add .sub { color: var(--dim); font-size: 12px; margin-bottom: 16px; }
+  #add label { display: block; font-size: 12px; color: var(--dim); margin: 12px 0 5px; }
+  #add input[type=text], #add textarea {
+    width: 100%; padding: 8px 10px; border-radius: 8px; font-size: 13px;
+    background: rgba(255,255,255,.05); border: 1px solid var(--line); color: var(--ink);
+    font-family: inherit;
+  }
+  #add textarea { resize: vertical; min-height: 58px; }
+  .slider { display: grid; grid-template-columns: 46px 1fr 46px; gap: 8px; align-items: center; font-size: 11px; color: var(--dim); }
+  .slider input { width: 100%; }
+  #add .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+  .btn {
+    padding: 8px 18px; border-radius: 8px; cursor: pointer; font-size: 13px;
+    border: 1px solid var(--line); background: rgba(255,255,255,.04); color: var(--ink);
+  }
+  .btn.primary { background: var(--cy); color: #06121a; border-color: var(--cy); font-weight: 600; }
+</style>
+</head>
+<body>
+<canvas id="scene"></canvas>
+
+<div id="topbar">
+  <div class="brand">主义星图<small>ISM ATLAS</small></div>
+  <div class="frames" id="frames"></div>
+  <div class="spacer"></div>
+  <button class="tool" id="btnLabels">显示名称</button>
+  <button class="tool" id="btnMode">自由漫游</button>
+  <button class="tool" id="btnReset">回到全景</button>
+  <button class="tool" id="btnAdd">＋ 添加</button>
+</div>
+
+<div id="legend">
+  <h4>当前参考系</h4>
+  <div id="axes"></div>
+  <div id="hint"></div>
+</div>
+
+<div id="tip"></div>
+
+<aside id="panel">
+  <button class="close" id="btnClose">×</button>
+  <div class="hd">
+    <div class="cn" id="pName"></div>
+    <div class="en" id="pEn"></div>
+    <div class="one" id="pOne"></div>
+  </div>
+  <div class="bd" id="pBody"></div>
+</aside>
+
+<div id="credits">
+  这些名字来自日常聊天与网络流行语，不是学术概念<br />
+  坐标与评价均为编辑部主观打分 · <a href="#" id="creditsMore">为什么这样打分</a>
+</div>
+
+<div id="intro">
+  <div class="card">
+    <div class="kicker">ISM ATLAS</div>
+    <h1>主义星图</h1>
+    <p class="lead">每个人都是自己的掌控者。</p>
+    <p>这些点只说明你此刻更靠近某种活法，不说明你被它定义。标签是地图上的记号，不是牢笼——如果它开始替你想问题，就该把它放下。</p>
+    <p>三十种活法散在一个空间里，换个角度看，它们的位置就变了。没有标准答案，只有你此刻站在哪。</p>
+    <button class="enter" id="btnEnter">进去看看</button>
+    <div class="fine">拖拽旋转 · 滚轮缩放 · 点击查看 · 支持手机</div>
+  </div>
+</div>
+
+<div id="add">
+  <div class="box">
+    <h3>添加一个主义</h3>
+    <div class="sub">保存在本机浏览器，不会上传。八个数值的含义与当前参考系一致：-1 偏负端，+1 偏正端。</div>
+    <label>中文名</label>
+    <input type="text" id="aName" placeholder="例如：斯多葛主义" />
+    <label>英文名（可空）</label>
+    <input type="text" id="aEn" placeholder="Stoicism" />
+    <label>一句话</label>
+    <input type="text" id="aOne" placeholder="用一句话说清它在主张什么" />
+    <label>定义</label>
+    <textarea id="aDef" placeholder="展开两三句，说明它想解决什么问题"></textarea>
+    <div id="aSliders"></div>
+    <div class="actions">
+      <button class="btn" id="btnAddCancel">取消</button>
+      <button class="btn primary" id="btnAddSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<script src="./vendor/three.min.js"></script>
+<script src="./data/isms.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
