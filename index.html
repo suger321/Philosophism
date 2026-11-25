@@ -32,8 +32,10 @@
     font: 600 15px/1.2 "PingFang SC", "Microsoft YaHei", system-ui;
     color: #d6e6f6; white-space: nowrap;
     text-shadow: 0 1px 4px rgba(0, 0, 0, .95), 0 0 10px rgba(0, 0, 0, .75);
-    transition: color .16s;
+    transition: color .16s, opacity .18s;
     will-change: transform, opacity;
+    backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
   }
   .lbl.sel { color: var(--gold); }
   .lbl.hov { color: #a9ecff; }
@@ -322,7 +324,7 @@
 </div>
 
 <script src="./vendor/three.min.js"></script>
-<script src="./data/isms.js?v=6"></script>
-<script src="./app.js?v=6"></script>
+<script src="./data/isms.js?v=8"></script>
+<script src="./app.js?v=8"></script>
 </body>
 </html>

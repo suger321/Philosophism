@@ -758,59 +758,108 @@
     requestAnimationFrame(loop);
   }
 
-  // HTML 标签：投影到屏幕定位，同格只留最近的一个
+  // HTML 标签：投影到屏幕定位。
+  // 位置每帧更新（跟手），但"谁留下"每 6 帧才重算一次，并记住上次结果，
+  // 避免相机转动时同一格里的标签反复互换导致闪烁。
   const _v3 = new THREE.Vector3();
+  const labelState = new WeakMap();
+  let labelTick = 0;
+
   function updateLabels() {
     const W = innerWidth, H = innerHeight;
     const list = [];
+    labelTick++;
+    const doCull = labelTick % 6 === 1;
 
     nodes.forEach(n => {
       const el = n.userData.el;
       if (!el) return;
       const on = n.visible && (showLabels || n === hovered || n === selected);
-      if (!on) { el.style.display = 'none'; return; }
+      if (!on) {
+        if (el.style.display !== 'none') el.style.display = 'none';
+        return;
+      }
 
-      _v3.copy(n.position);
-      _v3.project(camera);
-      if (_v3.z > 1) { el.style.display = 'none'; return; }
+      _v3.copy(n.position).project(camera);
+      if (_v3.z > 1) {
+        if (el.style.display !== 'none') el.style.display = 'none';
+        return;
+      }
 
       const sx = (_v3.x * 0.5 + 0.5) * W;
       const sy = (-_v3.y * 0.5 + 0.5) * H;
-      if (sx < -120 || sx > W + 120 || sy < -60 || sy > H + 60) {
-        el.style.display = 'none';
+      if (sx < -140 || sx > W + 140 || sy < -70 || sy > H + 70) {
+        if (el.style.display !== 'none') el.style.display = 'none';
         return;
       }
-      list.push({ n, el, sx, sy, d: camera.position.distanceTo(n.position) });
+
+      let st = labelState.get(n);
+      if (!st) { st = { kept: false, lx: NaN, ly: NaN, lift: -1 }; labelState.set(n, st); }
+      list.push({ n, el, sx, sy, lift: 0, keep: true, st, d: camera.position.distanceTo(n.position) });
     });
 
-    list.sort((a, b) => {
-      if (a.n === selected) return -1;
-      if (b.n === selected) return 1;
-      if (a.n === hovered) return -1;
-      if (b.n === hovered) return 1;
-      return a.d - b.d;
-    });
+    if (doCull) {
+      list.sort((a, b) => {
+        if (a.n === selected) return -1;
+        if (b.n === selected) return 1;
+        if (a.n === hovered) return -1;
+        if (b.n === hovered) return 1;
+        if (a.st.kept !== b.st.kept) return a.st.kept ? -1 : 1; // 滞回：上次留下的优先
+        return a.d - b.d;
+      });
 
-    const used = new Set();
-    const cw = isTouch ? 56 : 50;
-    const ch = isTouch ? 26 : 23;
+      // 用文字实际宽高做矩形碰撞，比固定格子准
+      list.forEach(it => {
+        if (it.st.w === undefined) it.st.w = it.el.offsetWidth || 60;
+      });
 
-    list.forEach(it => {
+      const placed = [];
+      for (const it of list) {
+        const isSel = it.n === selected;
+        const isHov = it.n === hovered;
+        const lift = (isSel || isHov) ? 24 : 13;
+        const w = it.st.w;
+        const x0 = it.sx - w / 2, x1 = it.sx + w / 2;
+        const y0 = it.sy - lift - 20, y1 = it.sy - lift;
+        let hit = false;
+        for (const o of placed) {
+          const ol = o.st.w;
+          const ox0 = o.sx - ol / 2, ox1 = o.sx + ol / 2;
+          const oy0 = o.sy - o.liftUsed - 20, oy1 = o.sy - o.liftUsed;
+          if (!(x1 < ox0 || x0 > ox1 || y1 < oy0 || y0 > oy1)) { hit = true; break; }
+        }
+        const keep = isSel || isHov || !hit;
+        it.st.kept = keep;
+        it.keep = keep;
+        if (keep) { it.liftUsed = lift; placed.push(it); }
+      }
+    } else {
+      list.forEach(it => { it.keep = it.st.kept; });
+    }
+
+    for (const it of list) {
+      if (!it.keep) {
+        if (it.el.style.display !== 'none') it.el.style.display = 'none';
+        continue;
+      }
       const isSel = it.n === selected;
       const isHov = it.n === hovered;
-      const key = Math.floor(it.sx / cw) + ':' + Math.floor(it.sy / ch);
-      if (!isSel && !isHov && used.has(key)) {
-        it.el.style.display = 'none';
-        return;
-      }
-      used.add(key);
       const lift = (isSel || isHov) ? 24 : 13;
+      const x = it.sx;
+      const y = it.sy - lift;
+      const st = it.st;
+      const wasHidden = it.el.style.display === 'none';
+
       it.el.style.display = '';
-      it.el.style.transform = `translate(${it.sx.toFixed(1)}px,${(it.sy - lift).toFixed(1)}px) translate(-50%,-100%)`;
+      // 只有位移超过半像素才重设 transform，静止时不碰 DOM
+      if (wasHidden || st.lift !== lift || !(Math.abs(x - st.lx) < 0.6 && Math.abs(y - st.ly) < 0.6)) {
+        it.el.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0) translate(-50%,-100%)`;
+        st.lx = x; st.ly = y; st.lift = lift;
+      }
       it.el.style.opacity = (isSel || isHov) ? '1' : String(Math.max(0.42, Math.min(0.95, 1.85 - it.d / 42)));
       it.el.classList.toggle('sel', isSel);
       it.el.classList.toggle('hov', isHov && !isSel);
-    });
+    }
   }
 
   /* ---------- 尺寸 ---------- */
