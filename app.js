@@ -261,6 +261,62 @@
     });
   }
 
+  /* ---------- 彩蛋：连点原点 5 次，诞生一个新主义 ---------- */
+  let originHits = 0;
+  let originHitAt = 0;
+  let sparkBorn = false;
+
+  function tryBirthSpark() {
+    const t = performance.now();
+    originHits = (t - originHitAt < 900) ? originHits + 1 : 1;
+    originHitAt = t;
+    if (originHits < 5 || sparkBorn) return false;
+    sparkBorn = true;
+    birthSpark();
+    return true;
+  }
+
+  function birthSpark() {
+    if (curMode !== 'life') switchMode('life');
+
+    const item = {
+      id: 'sparkism',
+      name: '烁主义',
+      nameEn: 'Sparkism',
+      oneLine: '它还没被写下来。',
+      definition: '（本体待补：烁主义的定义、主张、优势与局限，等人来写。）',
+      when: '',
+      tenets: [], strengths: [], limits: [], figures: [],
+      coords: {
+        mood: 0.7, effort: 0.4, focus: -0.2, reality: 0.3,
+        social: 0.2, money: 0, horizon: 0.5, stance: 0.6,
+        situation: 0.6, theory: 0.2, locus: 0.1, source: -0.3,
+        plurality: 0.5, dimension: 0.5, aim: 0.4
+      },
+      mode: 'life',
+      sources: [],
+      custom: true,
+      spark: true
+    };
+
+    isms.push(item);
+
+    const base = colorFor(item.coords.mood);
+    const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: base.clone(), transparent: true }));
+    mesh.position.set(0, 0, 0);
+    mesh.visible = true;
+    mesh.userData.ism = item;
+    mesh.userData.baseColor = base;
+    mesh.userData.target = posOf(item, frame);
+    attachLabel(mesh, item.name);
+    ptGroup.add(mesh);
+    nodes.push(mesh);
+
+    setSelected(mesh);
+    openPanel(item);
+    focusOn(mesh);
+  }
+
   // 选中：其余点降透明度并压暗，被选中的保持原色
   function setSelected(mesh) {
     selected = mesh;
@@ -397,11 +453,25 @@
     if (e.key === 'Escape') closePanel();
   });
 
+  const ORIGIN_POS = new THREE.Vector3(0, 0, 0);
+
   function pick(cx, cy) {
     const r = canvas.getBoundingClientRect();
     ndc.x = ((cx - r.left) / r.width) * 2 - 1;
     ndc.y = -((cy - r.top) / r.height) * 2 + 1;
     ray.setFromCamera(ndc, camera);
+
+    // 原点球很小，容易被中心的邻居挡住，单独给一段命中范围
+    if (ray.ray.distanceToPoint(ORIGIN_POS) < 0.7) {
+      const born = tryBirthSpark();
+      if (!born) {
+        closePanel();
+        setSelected(null);
+        resetView();
+      }
+      return;
+    }
+
     const hit = ray.intersectObjects(nodes.filter(n => n.visible).concat(origin), false)[0];
     if (!hit) {
       closePanel();
@@ -409,6 +479,7 @@
       return;
     }
     if (hit.object.userData.isOrigin) {
+      tryBirthSpark();
       closePanel();
       setSelected(null);
       resetView();
