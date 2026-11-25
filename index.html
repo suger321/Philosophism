@@ -150,6 +150,7 @@
   }
   .enter:hover { background: var(--cy); color: #06121a; }
   .fine { margin-top: 18px; font-size: 11px; color: #5d6b80; }
+  .tips { display: none; }
 
   /* 底部引用 */
   #credits {
@@ -220,12 +221,27 @@
     #legend #hint { display: none; }
     #credits { display: none; }
 
-    #intro { overflow-y: auto; align-content: start; padding: 26px 18px; }
+    #intro {
+      overflow-y: auto; align-content: start; padding: 26px 18px;
+      background: rgba(5, 7, 12, .97);
+      backdrop-filter: blur(10px);
+    }
     .card { margin: auto 0; }
     .card .kicker { margin-bottom: 10px; }
     .card h1 { font-size: 26px; margin-bottom: 14px; }
     .card p { font-size: 13.5px; line-height: 1.9; text-align: left; }
     .card p.lead { font-size: 16px; text-align: center; }
+    .fine { display: none; }
+    .tips {
+      display: block; margin-top: 18px; padding: 12px 14px; text-align: left;
+      border: 1px solid var(--line); border-radius: 10px;
+      background: rgba(255, 255, 255, .035);
+    }
+    .tips b {
+      display: block; font-size: 11px; letter-spacing: .14em; font-weight: 600;
+      color: var(--cy); margin-bottom: 7px;
+    }
+    .tips p { margin: 4px 0; font-size: 12.5px; line-height: 1.75; color: #9fb0c6; }
 
     #panel {
       top: auto; left: 0; right: 0; bottom: 0; width: 100%;
@@ -300,6 +316,15 @@
     <p>三十种活法散在一个空间里，换个角度看，它们的位置就变了。没有标准答案，只有你此刻站在哪。</p>
     <button class="enter" id="btnEnter">进去看看</button>
     <div class="fine">拖拽旋转 · 滚轮缩放 · 点击查看 · 支持手机</div>
+
+    <div class="tips">
+      <b>手机上怎么玩</b>
+      <p>单指拖动旋转 · 双指捏合缩放</p>
+      <p>点圆点看详情 · 点中心白点回全景</p>
+      <p>左上角切换参考系（生活观 / 价值观 / 情感观 / 状态观）</p>
+      <p>右上角 Aa 隐藏名称、⌂ 一键回到原点</p>
+      <p>右下角切换生活 / 哲学</p>
+    </div>
   </div>
 </div>
 
@@ -324,7 +349,7 @@
 </div>
 
 <script src="./vendor/three.min.js"></script>
-<script src="./data/isms.js?v=15"></script>
-<script src="./app.js?v=15"></script>
+<script src="./data/isms.js?v=16"></script>
+<script src="./app.js?v=16"></script>
 </body>
 </html>

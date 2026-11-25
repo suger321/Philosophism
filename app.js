@@ -191,6 +191,53 @@
   origin.add(mark);
   scene.add(origin);
 
+  /* ---------- 星空背景（程序化生成，不加载图片） ---------- */
+  const STAR_N = 1700;
+  const starBase = new Float32Array(STAR_N);
+
+  const stars = (() => {
+    const g = new THREE.BufferGeometry();
+    const pos = new Float32Array(STAR_N * 3);
+    const col = new Float32Array(STAR_N * 3);
+    for (let i = 0; i < STAR_N; i++) {
+      const r = 55 + Math.random() * 95;
+      const th = Math.random() * Math.PI * 2;
+      const ph = Math.acos(2 * Math.random() - 1);
+      pos[i * 3] = r * Math.sin(ph) * Math.cos(th);
+      pos[i * 3 + 1] = r * Math.cos(ph);
+      pos[i * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+      starBase[i] = Math.random();          // 每颗星固定的亮度基准
+      col[i * 3] = 1; col[i * 3 + 1] = 1; col[i * 3 + 2] = 1;
+    }
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    const m = new THREE.PointsMaterial({
+      size: 0.9, vertexColors: true, transparent: true, opacity: 0.9,
+      depthWrite: false, fog: false, sizeAttenuation: true
+    });
+    const p = new THREE.Points(g, m);
+    scene.add(p);
+    return p;
+  })();
+
+  // 生活模式偏暖（淡金），哲学模式偏冷（淡蓝）
+  function tintStars() {
+    const col = stars.geometry.attributes.color;
+    const c = new THREE.Color();
+    const warm = curMode === 'life';
+    for (let i = 0; i < STAR_N; i++) {
+      const b = starBase[i];
+      const h = warm ? (0.06 + b * 0.06) : (0.54 + b * 0.08);
+      const s = 0.15 + b * 0.45;
+      const l = 0.45 + b * 0.45;
+      c.setHSL(h, s, l);
+      col.array[i * 3] = c.r;
+      col.array[i * 3 + 1] = c.g;
+      col.array[i * 3 + 2] = c.b;
+    }
+    col.needsUpdate = true;
+  }
+
   /* ---------- 选中光环 ---------- */
   const selRing = new THREE.Mesh(
     new THREE.RingGeometry(0.44, 0.62, 56),
@@ -245,6 +292,8 @@
     mesh.userData.el = el;
   }
 
+  let sparkNode = null;
+
   function buildNodes() {
     isms.forEach(ism => {
       if (ism.hidden) return; // 彩蛋条目，等触发后才出生
@@ -295,9 +344,34 @@
     ptGroup.add(mesh);
     nodes.push(mesh);
 
+    sparkNode = mesh;
     setSelected(mesh);
     openPanel(item);
     focusOn(mesh);
+  }
+
+  // 彩蛋看完就收走：淡出、移除节点与标签
+  function fadeOutSpark() {
+    const node = sparkNode;
+    sparkNode = null;
+    if (!node) return;
+    const el = node.userData.el;
+    let op = node.material.opacity || 1;
+    const step = () => {
+      op -= 0.07;
+      if (op <= 0) {
+        ptGroup.remove(node);
+        if (el && el.parentNode) el.parentNode.removeChild(el);
+        const idx = nodes.indexOf(node);
+        if (idx >= 0) nodes.splice(idx, 1);
+        node.material.dispose();
+        return;
+      }
+      node.material.opacity = op;
+      if (el) el.style.opacity = String(op);
+      requestAnimationFrame(step);
+    };
+    step();
   }
 
   // 选中：其余点降透明度并压暗，被选中的保持原色
@@ -552,7 +626,11 @@
     panel.classList.add('open');
   }
 
-  function closePanel() { panel.classList.remove('open'); selected = null; }
+  function closePanel() {
+    if (selected && selected === sparkNode) fadeOutSpark();
+    panel.classList.remove('open');
+    selected = null;
+  }
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -670,6 +748,7 @@
     setSelected(null);
     rebuildAxes();
     renderLegend();
+    tintStars();
     closePanel();
     resetView();
     const mb = document.getElementById('btnMode2');
@@ -759,6 +838,10 @@
 
     // 原点轻微脉动，提示可点
     origin.scale.setScalar(1 + 0.07 * Math.sin(now / 460));
+
+    // 星空极慢漂移，给静止画面一点呼吸
+    stars.rotation.y += 0.00012;
+    stars.rotation.x += 0.00004;
 
     // 轴标签按距离保持视觉大小稳定
     axisGroup.children.forEach(o => {
@@ -962,6 +1045,7 @@
   /* ---------- 启动 ---------- */
   document.body.classList.add('intro-open');
   window.__ism = { nodes, camera, scene, orbit, switchFrame, frame: () => frame, mode: () => mode, resetView };
+  tintStars();
   rebuildAxes();
   buildNodes();
   renderLegend();
