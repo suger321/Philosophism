@@ -4,9 +4,26 @@
 
 没有标准答案，坐标只是编辑部的主观判断。
 
-## 本地运行
+## 一键部署
 
-直接双击 `index.html`，不需要服务器、不需要安装依赖。three.js 已放在 `vendor/` 里，离线可用。
+### Windows
+
+1. 把仓库下载到本地（网页 `Code → Download ZIP`，或 `git clone`）
+2. 双击 **`deploy.bat`**
+3. 浏览器会自动打开 `http://127.0.0.1:8787/`；关掉那个黑色命令行窗口就停止服务
+
+需要 Python 3 或 Node.js 之一。两个都没有也能用——脚本会退回去直接打开 `index.html`，功能完全一样。
+
+### macOS / Linux
+
+```bash
+chmod +x deploy.sh
+./deploy.sh
+```
+
+### 不想部署
+
+直接双击 `index.html` 也能用。three.js 已放在 `vendor/` 里，离线可用，不需要装任何东西。
 
 ## 怎么玩
 
@@ -20,12 +37,16 @@
 ## 目录
 
 ```
+deploy.bat          Windows 一键启动
+deploy.sh           macOS / Linux 一键启动
+push.bat            改完代码一键提交推送
 index.html          页面结构
 app.js              3D 场景、交互、详情渲染
 data/isms.json      42 条主义（含八维打分）
 data/sources.json   来源说明
 data/editorial.json 编者的话、轴说明
 data/isms.js        上面三个打包后的内联数据（页面实际读这个）
+tools/serve.js      没有 Python 时的兜底静态服务器
 tools/data_all.py   生成数据
 tools/build_data.py 打包数据
 vendor/three.min.js three.js r160
