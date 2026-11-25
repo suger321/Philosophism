@@ -427,6 +427,17 @@
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
     if (mode === 'roam') {
+      // 正在看详情：点画面就是收起详情、继续飞，不再判断命中
+      if (document.getElementById('panel').classList.contains('open')) {
+        closePanel();
+        setSelected(null);
+        try {
+          const p = canvas.requestPointerLock();
+          if (p && p.catch) p.catch(() => {});
+        } catch (err) { /* 忽略 */ }
+        return;
+      }
+
       // 准星瞄到了就近的主义：退出锁定、还原鼠标，直接看详情
       if (aimTarget) {
         document.exitPointerLock && document.exitPointerLock();
@@ -436,6 +447,7 @@
         focusOn(aimTarget);
         return;
       }
+
       if (document.pointerLockElement !== canvas) {
         try {
           const p = canvas.requestPointerLock();
@@ -692,7 +704,8 @@
   let aimTarget = null;
 
   function updateAim() {
-    if (mode !== 'roam') {
+    // 看详情时收起准星，免得「点了又开」看起来像死循环
+    if (mode !== 'roam' || panel.classList.contains('open')) {
       if (aimTarget) aimTarget = null;
       reticleEl.classList.remove('on', 'hit');
       return;
