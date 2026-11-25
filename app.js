@@ -200,10 +200,16 @@
   let showLabels = false;
   let hovered = null;
 
+  // 两套模式各用一个色系：生活偏暖（红橙→金），哲学偏冷（靛→青）
+  // 色系内按轴值微移色相，有层次但不花；也不用 RGB 混色，避免发灰
   function colorFor(v) {
     const t = (Math.max(-1, Math.min(1, v)) + 1) / 2;
-    const h = 0.63 - 0.2 * t;
-    return new THREE.Color().setHSL(h, 0.72, 0.58);
+    if (curMode === 'life') {
+      const h = (6 + t * 36) / 360;
+      return new THREE.Color().setHSL(h, 0.86, 0.54 + t * 0.08);
+    }
+    const h = (252 - t * 68) / 360;
+    return new THREE.Color().setHSL(h, 0.74, 0.55 + t * 0.07);
   }
 
   function posOf(ism, f) {
@@ -549,6 +555,15 @@
     if (m === curMode) return;
     curMode = m;
     frame = frameList()[0];
+    showLabels = false;
+    hovered = null;
+    selected = null;
+    const lb = document.getElementById('btnLabels');
+    if (lb) {
+      lb.classList.remove('on');
+      const t = lb.querySelector('.lbl');
+      if (t) t.textContent = '显示名称';
+    }
     buildFrameButtons();
     nodes.forEach(n => {
       const on = (n.userData.ism.mode || 'life') === m;
@@ -667,7 +682,7 @@
       const lab = n.userData.label;
       if (lab) {
         lab.position.set(n.position.x, n.position.y + 0.78, n.position.z);
-        lab.visible = showLabels || n === hovered || n === selected;
+        lab.visible = n.visible && (showLabels || n === hovered || n === selected);
         if (lab.visible && lab.userData.base) {
           const d = camera.position.distanceTo(n.position);
           const f = Math.max(0.5, Math.min(2.2, d / 30));
