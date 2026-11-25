@@ -94,8 +94,8 @@
   scene.add(axisGroup);
 
   function makeLabelSprite(text, color, fs, k) {
-    fs = fs || 30;
-    k = k || 0.017;
+    fs = fs || 33;
+    k = k || 0.019;
     const weight = fs > 24 ? 600 : 500;
     const pad = fs > 24 ? 10 : 6;
     const c = document.createElement('canvas');
@@ -195,9 +195,9 @@
   const ptGroup = new THREE.Group();
   scene.add(ptGroup);
 
-  const geo = new THREE.SphereGeometry(isTouch ? 0.38 : 0.32, 18, 18);
+  const geo = new THREE.SphereGeometry(isTouch ? 0.33 : 0.3, 18, 18);
   const nodes = [];
-  let showLabels = false;
+  let showLabels = true;
   let hovered = null;
 
   // 两套模式各用一个色系：生活偏暖（红橙→金），哲学偏冷（靛→青）
@@ -229,8 +229,8 @@
       mesh.visible = (ism.mode || 'life') === curMode;
       mesh.userData.ism = ism;
       mesh.userData.target = mesh.position.clone();
-      const lab = makeLabelSprite(ism.name, 'rgba(203,220,240,0.86)', 22, 0.0115);
-      lab.position.copy(mesh.position).add(new THREE.Vector3(0, 0.78, 0));
+      const lab = makeLabelSprite(ism.name, 'rgba(214,230,246,0.92)', 28, 0.0138);
+      lab.position.copy(mesh.position).add(new THREE.Vector3(0, 0.62, 0));
       lab.visible = false;
       mesh.userData.label = lab;
       ptGroup.add(mesh);
@@ -555,14 +555,13 @@
     if (m === curMode) return;
     curMode = m;
     frame = frameList()[0];
-    showLabels = false;
     hovered = null;
     selected = null;
     const lb = document.getElementById('btnLabels');
     if (lb) {
-      lb.classList.remove('on');
+      lb.classList.toggle('on', showLabels);
       const t = lb.querySelector('.lbl');
-      if (t) t.textContent = '显示名称';
+      if (t) t.textContent = showLabels ? '隐藏名称' : '显示名称';
     }
     buildFrameButtons();
     nodes.forEach(n => {
@@ -639,8 +638,8 @@
     mesh.visible = true;
     mesh.userData.ism = item;
     mesh.userData.target = mesh.position.clone();
-    const lab = makeLabelSprite(item.name, 'rgba(203,220,240,0.86)', 22, 0.0115);
-    lab.position.copy(mesh.position).add(new THREE.Vector3(0, 0.78, 0));
+    const lab = makeLabelSprite(item.name, 'rgba(214,230,246,0.92)', 28, 0.0138);
+    lab.position.copy(mesh.position).add(new THREE.Vector3(0, 0.62, 0));
     lab.visible = false;
     mesh.userData.label = lab;
     ptGroup.add(mesh);
@@ -681,12 +680,16 @@
       n.position.lerp(n.userData.target, 1 - Math.pow(0.001, dt));
       const lab = n.userData.label;
       if (lab) {
-        lab.position.set(n.position.x, n.position.y + 0.78, n.position.z);
+        lab.position.set(n.position.x, n.position.y + 0.62, n.position.z);
         lab.visible = n.visible && (showLabels || n === hovered || n === selected);
         if (lab.visible && lab.userData.base) {
           const d = camera.position.distanceTo(n.position);
-          const f = Math.max(0.5, Math.min(2.2, d / 30));
+          const f = isTouch
+            ? Math.max(0.4, Math.min(1.3, d / 54))
+            : Math.max(0.5, Math.min(2.2, d / 30));
           lab.scale.set(lab.userData.base.x * f, lab.userData.base.y * f, 1);
+          // 远的淡一点，重叠时能分出前后
+          lab.material.opacity = Math.max(0.34, Math.min(0.96, 1.9 - d / 40));
         }
       }
     });
@@ -714,9 +717,40 @@
       applyRoam();
     }
 
+    cullLabels();
     updateTip();
     renderer.render(scene, camera);
     requestAnimationFrame(loop);
+  }
+
+  // 标签抽稀：屏幕位置太近的只留最近的，避免文字叠成一坨
+  const _v3 = new THREE.Vector3();
+  function cullLabels() {
+    if (!showLabels) return;
+    const W = innerWidth, H = innerHeight;
+    const list = nodes.filter(n => n.visible && n.userData.label && n.userData.label.visible);
+    list.sort((a, b) => {
+      if (a === selected) return -1;
+      if (b === selected) return 1;
+      if (a === hovered) return -1;
+      if (b === hovered) return 1;
+      return camera.position.distanceTo(a.position) - camera.position.distanceTo(b.position);
+    });
+    const used = new Set();
+    const cellW = isTouch ? 46 : 44;
+    const cellH = isTouch ? 23 : 21;
+    for (const n of list) {
+      if (n === selected || n === hovered) {
+        _v3.copy(n.position).project(camera);
+        used.add(Math.floor(((_v3.x * 0.5 + 0.5) * W) / cellW) + ':' + Math.floor(((-_v3.y * 0.5 + 0.5) * H) / cellH));
+        continue;
+      }
+      _v3.copy(n.position).project(camera);
+      if (_v3.z > 1) { n.userData.label.visible = false; continue; }
+      const key = Math.floor(((_v3.x * 0.5 + 0.5) * W) / cellW) + ':' + Math.floor(((-_v3.y * 0.5 + 0.5) * H) / cellH);
+      if (used.has(key)) n.userData.label.visible = false;
+      else used.add(key);
+    }
   }
 
   /* ---------- 尺寸 ---------- */
