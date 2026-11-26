@@ -577,26 +577,40 @@
     if (ms !== 0) verdictTimer = setTimeout(hideVerdict, ms || 4200);
   }
 
+  // 跳到某个主义；如果它不属于当前模式，先切模式再定位
+  function jumpTo(id) {
+    const toIsm = isms.find(i => i.id === id);
+    if (!toIsm) return null;
+
+    let target = nodes.find(n => n.visible && n.userData.ism.id === id);
+    if (!target) {
+      const wantMode = toIsm.mode || 'life';
+      if (wantMode !== curMode) {
+        switchMode(wantMode);
+        target = nodes.find(n => n.visible && n.userData.ism.id === id);
+      }
+    }
+    if (!target) return null;
+
+    setSelected(target);
+    openPanel(target.userData.ism);
+    focusOn(target);
+    return target;
+  }
+
   function applyExtreme(r) {
-    const fromNode = selected;
-    const from = fromNode ? fromNode.userData.ism : null;
+    const from = selected ? selected.userData.ism : null;
     const toIsm = isms.find(i => i.id === r.to);
-    const target = nodes.find(n => n.visible && n.userData.ism.id === r.to);
+
+    // 先跳，再出卡片：跳转可能要切换模式，而切换模式会清掉浮层
+    jumpTo(r.to);
 
     showVerdict(
       `${from ? from.name : ''} → ${toIsm ? toIsm.name : '另一个极端'}`,
       r.note,
       6000,
-      target && fromNode ? () => {
-        if (fromNode.visible) { setSelected(fromNode); focusOn(fromNode); }
-      } : null
+      from ? () => jumpTo(from.id) : null
     );
-
-    if (target) {
-      setSelected(target);
-      openPanel(target.userData.ism);
-      focusOn(target);
-    }
   }
 
   function openPush() {
@@ -657,31 +671,23 @@
   }
 
   function finishBlend(r) {
-    const fromNode = selected;
+    const from = selected ? selected.userData.ism : null;
     const a = isms.find(i => i.id === r.a);
     const b = isms.find(i => i.id === r.b);
     const to = isms.find(i => i.id === r.to);
-    const target = nodes.find(n => n.visible && n.userData.ism.id === r.to);
 
     mixing = false;
     mixSet = new Set();
+
+    const jumped = jumpTo(r.to);
+    if (!jumped) setSelected(null);
 
     showVerdict(
       `${a ? a.name : ''} + ${b ? b.name : ''} → ${to ? to.name : '抵消'}`,
       r.note,
       6000,
-      target && fromNode ? () => {
-        if (fromNode.visible) { setSelected(fromNode); focusOn(fromNode); }
-      } : null
+      from ? () => jumpTo(from.id) : null
     );
-
-    if (target) {
-      setSelected(target);
-      openPanel(target.userData.ism);
-      focusOn(target);
-    } else {
-      setSelected(null);
-    }
   }
 
   actsEl.addEventListener('click', e => {
